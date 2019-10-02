@@ -49,12 +49,13 @@ int RemoveElement(struct node **plist, int position){
 struct node *lista;
 
 void printPrompt(){
-    printf(" # ");
+    printf("# ");
 }
 
 void readInput(char comando[]){
     fgets(comando,MAXLEN,stdin);
     InsertElement(&lista, comando);
+    printf(" ");
 }
 
 int TrocearCadena(char * cadena, char * trozos[]){
@@ -68,25 +69,32 @@ int TrocearCadena(char * cadena, char * trozos[]){
 
 // Funciones para las tareas de cada comando de la shell
 
-void autores(char * opcion){
-    if (strcmp(opcion,"-l")){
-        printf("carlos.torres \n");
-        printf("d.s.vega \n");
-    }
-    else if (strcmp(opcion, "-n"))
-    {
-        printf("Carlos Torres Paz\n");
-        printf("Daniel Sergio Vega Rodríguez\n");
+void autores(char * opcion, int nopc){
+    if (nopc == 2){
+        if (opcion[1]=='n')
+        {
+            printf("Carlos Torres Paz\n");
+            printf("Daniel Sergio Vega Rodríguez\n");
+        }
+        else if (opcion[1]=='l')
+        {
+            printf("carlos.torres\n");
+            printf("d.s.vega\n");
+        }
+        else
+        {
+            printf("%s : unrecognised command option\n",opcion);
+        }
     }
     else
     {
-        printf("Carlos Torres Paz : carlos.torres");
-        printf("Daniel Sergio Vega Rodríguez : d.s.vega");
+        printf("Carlos Torres Paz : carlos.torres\n");
+        printf("Daniel Sergio Vega Rodríguez : d.s.vega\n");
     }
 }
 
 void pid(char * opcion){
-    if (strcmp(opcion, "-p"))
+    if (!strcmp(opcion, "-p"))
     {
         printf("PID of parent process: %i\n", getppid());
     }else
@@ -119,7 +127,7 @@ void fecha_hora(char f_h){
 }
 
 void hist(char * opcion){
-    if (strcmp(opcion,"-c")){
+    if (!strcmp(opcion,"-c")){
         // vaciar historial
     }else{
         // mostrar historial
@@ -128,35 +136,37 @@ void hist(char * opcion){
 
 void processInput(char comando[], int * salir){
     char *trozos[2];
-    TrocearCadena(comando, trozos);
+    int nopc = TrocearCadena(comando, trozos);
 
-    if (!strcmp(trozos[0],"autores")){
-        autores(trozos[1]);
-    }
-    else if (!strcmp(trozos[0],"pid"))
-    {
-        pid(trozos[1]);
-    }
-    else if (!strcmp(trozos[0],"cdir"))
-    {
-        cdir(trozos[1]);
-    }
-    else if (!strcmp(trozos[0],"fecha")){
-        fecha_hora('f');
-    }
-    else if (!strcmp(trozos[0],"hora")){
-        fecha_hora('h');
-    }
-    else if (!strcmp(trozos[0],"hist"))
-    {
-        hist(trozos[1]);
-    }
-    else if (!strcmp(trozos[0],"fin") || !strcmp(trozos[0],"end") || !strcmp(trozos[0], "exit")){
-        *salir = 1;
-    }
-    else
-    {
-        printf("Comando no válido\n");
+    if (nopc > 0){
+        if (!strcmp(trozos[0],"autores")){
+                autores(trozos[1],nopc);
+        }
+        else if (!strcmp(trozos[0],"pid"))
+        {
+            pid(trozos[1]);
+        }
+        else if (!strcmp(trozos[0],"cdir"))
+        {
+            cdir(trozos[1]);
+        }
+        else if (!strcmp(trozos[0],"fecha")){
+            fecha_hora('f');
+        }
+        else if (!strcmp(trozos[0],"hora")){
+            fecha_hora('h');
+        }
+        else if (!strcmp(trozos[0],"hist"))
+        {
+            hist(trozos[1]);
+        }
+        else if (!strcmp(trozos[0],"fin") || !strcmp(trozos[0],"end") || !strcmp(trozos[0], "exit")){
+            *salir = 1;
+        }
+        else
+        {
+            printf("Command not valid\n");
+        }
     }
 }
 
