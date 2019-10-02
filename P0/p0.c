@@ -153,7 +153,7 @@ void processInput(char comando[], int * salir){
         hist(trozos[1]);
     }
     else if (strcmp(trozos[0],"fin") || strcmp(trozos[0],"end") || strcmp(trozos[0], "exit")){
-        salir = 1;
+        *salir = 1;
     }
     else
     {
