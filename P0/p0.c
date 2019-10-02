@@ -118,19 +118,24 @@ void fecha_hora(char f_h){
     time(&now); //writes current time to NOW variable
     struct tm *local = localtime(&now); //a structure to separate minutes, hours, day, month, year
 
-    if (f_h = 'f'){
+    if (f_h == 'f'){
         printf("Today is %d %d, %d\n",local->tm_yday, local->tm_mon+1, local->tm_year+1900);
     }
-    else if (f_h = 'h'){
+    else if (f_h == 'h'){
         printf("Right now it is %d:%d:%d\n",local->tm_hour,local->tm_min,local->tm_sec);
     }
 }
 
 void hist(char * opcion){
     if (!strcmp(opcion,"-c")){
-        // vaciar historial
+      while (lista != NULL) RemoveElement(&lista,0);
+      printf("Cleared command history\n");
     }else{
-        // mostrar historial
+      struct node * pointer = lista;
+      for (int i = 0; pointer != NULL; i++) {
+        printf("%3d > %s\n",i + 1,pointer->com);
+        pointer = pointer->next;
+      }
     }
 }
 
