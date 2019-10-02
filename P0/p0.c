@@ -20,28 +20,27 @@ void CreateList(struct node **plist){
 }
 
 void InsertElement(struct node **plist, char element[]) {
-  struct node *last = *plist;
-  while (last != NULL) {
-    last = last->next;
+  struct node **last = plist;
+  while (*last != NULL) {
+    last = &(*last)->next;
   };
-  last = (struct node *) malloc(sizeof(struct node));
+  *last = (struct node *) malloc(sizeof(struct node));
   for (int i = 0; (element[i] != '\0') && (i < MAXLEN); i++)
-    last->com[i] = element[i];
-  last->next = NULL;
+    (*last)->com[i] = element[i];
+  (*last)->next = NULL;
 };
 
 int RemoveElement(struct node **plist, int position){
   struct node **pointertopointer = plist; //To aim the pointer in the list that aims the node to be removed
   for (int i = 0; i < position; i++) {
-    pointertopointer = &(**pointertopointer).next;
+    pointertopointer = &(*pointertopointer)->next;
     if (*pointertopointer == NULL) return -1;  //Index out of bounds
   }
   struct node *auxiliar = *pointertopointer;
-  *pointertopointer = (**pointertopointer).next;
+  *pointertopointer = (*pointertopointer)->next;
   free(auxiliar);
   return 0;
 };
-//  ->(*LIST)->(NODE(*))->(NODE(*))->(NODE(*))
 
 //Shell:
 
