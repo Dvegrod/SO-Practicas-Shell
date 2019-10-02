@@ -145,7 +145,7 @@ void processInput(char comando[], int * salir){
 
     if (nopc > 0){
         if (!strcmp(trozos[0],"autores")){
-                autores(trozos[1],nopc);
+                autores(trozos[1]);
         }
         else if (!strcmp(trozos[0],"pid"))
         {
