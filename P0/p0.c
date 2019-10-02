@@ -92,7 +92,7 @@ void pid(char * opcion){
     }else
     {
         printf("PID of Shell: %i\n", getpid());
-    }   
+    }
 }
 
 void cdir(char * opcion){
@@ -111,10 +111,10 @@ void fecha_hora(char f_h){
     struct tm *local = localtime(&now); //a structure to separate minutes, hours, day, month, year
 
     if (f_h = 'f'){
-        printf("Today is %d %d, %d",local->tm_yday, local->tm_mon+1, local->tm_year+1900);
+        printf("Today is %d %d, %d\n",local->tm_yday, local->tm_mon+1, local->tm_year+1900);
     }
     else if (f_h = 'h'){
-        printf("Right now it is %d:%d:%d",local->tm_hour,local->tm_min,local->tm_sec);
+        printf("Right now it is %d:%d:%d\n",local->tm_hour,local->tm_min,local->tm_sec);
     }
 }
 
@@ -130,28 +130,28 @@ void processInput(char comando[], int * salir){
     char *trozos[2];
     TrocearCadena(comando, trozos);
 
-    if (strcmp(trozos[0],"autores")){
-        autores(trozos[1]);        
+    if (!strcmp(trozos[0],"autores")){
+        autores(trozos[1]);
     }
-    else if (strcmp(trozos[0],"pid"))
+    else if (!strcmp(trozos[0],"pid"))
     {
         pid(trozos[1]);
     }
-    else if (strcmp(trozos[0],"cdir"))
+    else if (!strcmp(trozos[0],"cdir"))
     {
         cdir(trozos[1]);
     }
-    else if (strcmp(trozos[0],"fecha")){
+    else if (!strcmp(trozos[0],"fecha")){
         fecha_hora('f');
     }
-    else if (strcmp(trozos[0],"hora")){
+    else if (!strcmp(trozos[0],"hora")){
         fecha_hora('h');
     }
-    else if (strcmp(trozos[0],"hist"))
+    else if (!strcmp(trozos[0],"hist"))
     {
         hist(trozos[1]);
     }
-    else if (strcmp(trozos[0],"fin") || strcmp(trozos[0],"end") || strcmp(trozos[0], "exit")){
+    else if (!strcmp(trozos[0],"fin") || !strcmp(trozos[0],"end") || !strcmp(trozos[0], "exit")){
         *salir = 1;
     }
     else
