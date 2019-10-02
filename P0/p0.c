@@ -55,7 +55,6 @@ void printPrompt(){
 void readInput(char comando[]){
     fgets(comando,MAXLEN,stdin);
     InsertElement(&lista, comando);
-    printf(" ");
 }
 
 int TrocearCadena(char * cadena, char * trozos[]){
@@ -127,16 +126,19 @@ void fecha_hora(char f_h){
 }
 
 void hist(char * opcion){
+  if (opcion != NULL) {
     if (!strcmp(opcion,"-c")){
       while (lista != NULL) RemoveElement(&lista,0);
       printf("Cleared command history\n");
-    }else{
-      struct node * pointer = lista;
-      for (int i = 0; pointer != NULL; i++) {
-        printf("%3d > %s\n",i + 1,pointer->com);
-        pointer = pointer->next;
-      }
-    }
+    }else printf("%s : unrecognised command option\n",opcion);
+  }
+  else {
+    struct node * pointer = lista;
+    for (int i = 0; pointer != NULL; i++) {
+      printf("%d > %s\n",(i + 1),pointer->com);
+      pointer = pointer->next;
+    };
+  }
 }
 
 void processInput(char comando[], int * salir){
