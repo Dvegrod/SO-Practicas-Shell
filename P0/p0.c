@@ -69,8 +69,8 @@ int TrocearCadena(char * cadena, char * trozos[]){
 
 // Funciones para las tareas de cada comando de la shell
 
-void autores(char * opcion, int nopc){
-    if (nopc == 2){
+void autores(char * opcion){
+    if (opcion != NULL){
         if (opcion[1]=='n')
         {
             printf("Carlos Torres Paz\n");
