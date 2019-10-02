@@ -2,7 +2,10 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include <sys/types.h>
+#include <unistd.h>
 #define MAXLEN 255
+
 //Lista:
 
 struct node {
@@ -42,6 +45,8 @@ int RemoveElement(struct node **plist, int position){
 
 //Shell:
 
+//Funciones para leer los comandos de la Shell
+
 struct node *lista;
 
 void printPrompt(){
@@ -49,7 +54,7 @@ void printPrompt(){
 }
 
 void readInput(char comando[]){
-    fgets(comando,255,stdin);
+    fgets(comando,MAXLEN,stdin);
     InsertElement(&lista, comando);
 }
 
@@ -61,6 +66,8 @@ int TrocearCadena(char * cadena, char * trozos[]){
         i++;
     return i;
 }
+
+// Funciones para las tareas de cada comando de la shell
 
 void autores(char * opcion){
     if (strcmp(opcion,"-l")){
@@ -79,13 +86,13 @@ void autores(char * opcion){
     }
 }
 
-void pid(char * opcion){ //PENDIENTE
+void pid(char * opcion){
     if (strcmp(opcion, "-p"))
     {
-        printf("PID OF PARENT PROCESS\n");
+        printf("PID of parent process: %d\n", getppid());
     }else
     {
-        printf("PID OF SHELL");
+        printf("PID of Shell: %d\n", getpid());
     }   
 }
 
@@ -160,7 +167,7 @@ void processInput(char comando[], int * salir){
 int main(int argc, char const *argv[])
 {
     int salir = 0;
-    char comando[255];
+    char comando[MAXLEN];
     while(!salir){
         printPrompt();
         readInput(comando);
