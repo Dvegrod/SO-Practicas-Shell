@@ -69,7 +69,12 @@ int TrocearCadena(char * cadena, char * trozos[]){
 // Funciones para las tareas de cada comando de la shell
 
 void autores(char * opcion){
-    if (opcion != NULL){
+    if (opcion == NULL){
+        printf("Carlos Torres Paz : carlos.torres\n");
+        printf("Daniel Sergio Vega Rodríguez : d.s.vega\n");
+    }
+    else
+    {        
         if (opcion[1]=='n')
         {
             printf("Carlos Torres Paz\n");
@@ -85,28 +90,31 @@ void autores(char * opcion){
             printf("%s : unrecognised command option\n",opcion);
         }
     }
-    else
-    {
-        printf("Carlos Torres Paz : carlos.torres\n");
-        printf("Daniel Sergio Vega Rodríguez : d.s.vega\n");
-    }
 }
 
-void pid(char * opcion){
-    if (!strcmp(opcion, "-p"))
-    {
-        printf("PID of parent process: %i\n", getppid());
-    }else
+void pid(char *opcion){
+    if (opcion==NULL)
     {
         printf("PID of Shell: %i\n", getpid());
     }
+    else
+    {
+        if (opcion[1] == 'p')
+        {
+            printf("PID of parent process: %i\n", getppid());
+        }
+        else{
+            printf("%s : unrecognised command option\n", opcion);
+        }
+    }    
 }
 
 void cdir(char * opcion){
     char buf[MAXLEN];
-    if (strlen(opcion)==0){
+    if (opcion == NULL){
         printf("%s\n",getcwd(buf,MAXLEN));
-    }else
+    }
+    else
     {
         chdir(opcion);
     }
@@ -118,7 +126,7 @@ void fecha_hora(char f_h){
     struct tm *local = localtime(&now); //a structure to separate minutes, hours, day, month, year
 
     if (f_h == 'f'){
-        printf("Today is %d %d, %d\n",local->tm_yday, local->tm_mon+1, local->tm_year+1900);
+        printf("Today is %1.2d/%1.2d/%d\n",local->tm_mday, local->tm_mon+1, local->tm_year+1900);
     }
     else if (f_h == 'h'){
         printf("Right now it is %d:%d:%d\n",local->tm_hour,local->tm_min,local->tm_sec);
@@ -172,7 +180,7 @@ void processInput(char comando[], int * salir){
         }
         else
         {
-            printf("Command not valid\n");
+            printf("%s : unrecognised command\n",trozos[0]);
         }
     }
 }
