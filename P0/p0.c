@@ -89,16 +89,17 @@ void autores(char * opcion){
 void pid(char * opcion){
     if (strcmp(opcion, "-p"))
     {
-        printf("PID of parent process: %d\n", getppid());
+        printf("PID of parent process: %i\n", getppid());
     }else
     {
-        printf("PID of Shell: %d\n", getpid());
+        printf("PID of Shell: %i\n", getpid());
     }   
 }
 
-void cdir(char * opcion){ //PENDIENTE
+void cdir(char * opcion){
+    char buf[MAXLEN];
     if (strlen(opcion)==0){
-        printf(getcwd());
+        printf("%s\n",getcwd(buf,MAXLEN));
     }else
     {
         chdir(opcion);
@@ -125,9 +126,6 @@ void hist(char * opcion){
         // mostrar historial
     }
 }
-
-
-
 
 void processInput(char comando[], int * salir){
     char *trozos[2];
@@ -161,7 +159,6 @@ void processInput(char comando[], int * salir){
     {
         printf("Comando no válido\n");
     }
-    
 }
 
 int main(int argc, char const *argv[])
