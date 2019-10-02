@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #define MAXLEN 255
 //Lista:
 
@@ -61,63 +62,99 @@ int TrocearCadena(char * cadena, char * trozos[]){
     return i;
 }
 
+void autores(char * opcion){
+    if (strcmp(opcion,"-l")){
+        printf("carlos.torres \n");
+        printf("d.s.vega \n");
+    }
+    else if (strcmp(opcion, "-n"))
+    {
+        printf("Carlos Torres Paz\n");
+        printf("Daniel Sergio Vega Rodríguez\n");
+    }
+    else
+    {
+        printf("Carlos Torres Paz : carlos.torres");
+        printf("Daniel Sergio Vega Rodríguez : d.s.vega");
+    }
+}
+
+void pid(char * opcion){ //PENDIENTE
+    if (strcmp(opcion, "-p"))
+    {
+        printf("PID OF PARENT PROCESS\n");
+    }else
+    {
+        printf("PID OF SHELL");
+    }   
+}
+
+void cdir(char * opcion){ //PENDIENTE
+    if (strlen(opcion)==0){
+        printf(getcwd());
+    }else
+    {
+        chdir(opcion);
+    }
+}
+
+void fecha_hora(char f_h){
+    time_t now; //time type variable
+    time(&now); //writes current time to NOW variable
+    struct tm *local = localtime(&now); //a structure to separate minutes, hours, day, month, year
+
+    if (f_h = 'f'){
+        printf("Today is %d %d, %d",local->tm_yday, local->tm_mon+1, local->tm_year+1900);
+    }
+    else if (f_h = 'h'){
+        printf("Right now it is %d:%d:%d",local->tm_hour,local->tm_min,local->tm_sec);
+    }
+}
+
+void hist(char * opcion){
+    if (strcmp(opcion,"-c")){
+        // vaciar historial
+    }else{
+        // mostrar historial
+    }
+}
+
+
+
+
 void processInput(char comando[], int * salir){
     char *trozos[2];
-    // trozos[0]= malloc(10*sizeof(char));
-    // trozos[1]= malloc(10*sizeof(char));
-    TrocearCadena(comando ,&trozos);
+    TrocearCadena(comando, trozos);
 
-    switch (trozos[0])
-    {
-    case "autores":
-        switch (trozos[1])
-        {
-        case "-l":
-            /* code */
-            break;
-        case "-n":
-            /*code*/
-            break;
-        default:
-            /*code*/
-            break;
-        }
-
-    case "pid":
-        if (trozos[1] == "-l"){
-
-        }else{
-
-        }
-
-    case "cdir":
-        if (trozos[1] == "direct"){
-
-        }else{
-
-        }
-
-    case "fecha":
-        /*code*/
-    
-    case "hora":
-        /*code*/
-
-    case "hist":
-        if (trozos[1] == "-c"){
-
-        }else{
-
-        }
-
-    case ("fin" | "end" | "exit"):
-        salir = 1;
-        break;
-
-    default:
-        printf("Comando no válido \n");
-        break;
+    if (strcmp(trozos[0],"autores")){
+        autores(trozos[1]);        
     }
+    else if (strcmp(trozos[0],"pid"))
+    {
+        pid(trozos[1]);
+    }
+    else if (strcmp(trozos[0],"cdir"))
+    {
+        cdir(trozos[1]);
+    }
+    else if (strcmp(trozos[0],"fecha")){
+        fecha_hora('f');
+    }
+    else if (strcmp(trozos[0],"hora")){
+        fecha_hora('h');
+    }
+    else if (strcmp(trozos[0],"hist"))
+    {
+        hist(trozos[1]);
+    }
+    else if (strcmp(trozos[0],"fin") || strcmp(trozos[0],"end") || strcmp(trozos[0], "exit")){
+        salir = 1;
+    }
+    else
+    {
+        printf("Comando no válido\n");
+    }
+    
 }
 
 int main(int argc, char const *argv[])
