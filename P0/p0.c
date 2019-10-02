@@ -14,15 +14,16 @@ void CreateList(struct node **plist){
     *plist = NULL;
 }
 
-void InsertElement(struct node **plist, char command[]){ 
-    struct node * lastnode;
-    lastnode = *plist;
-    while (lastnode != NULL){
-        lastnode = lastnode->next;
-    }
-    lastnode = malloc(sizeof(struct node));
-    lastnode = 
-}
+void InsertElement(struct node **plist, char element[]) {
+  struct node *last = *plist;
+  while (last != NULL) {
+    last = last->next;
+  };
+  last = (struct node *) malloc(sizeof(struct node));
+  for (int i = 0; (element[i] != '\0') && (i < 255); i++)
+    last->com[i] = element[i];
+  last->next = NULL;
+};
 
 void RemoveElement(struct node **plist){
     
