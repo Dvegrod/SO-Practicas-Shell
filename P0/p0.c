@@ -9,8 +9,8 @@
 //Lista:
 
 struct node {
-    char com[MAXLEN];
-    struct node *next;
+   char com[MAXLEN];
+   struct node *next;
 };
 
 struct node * lista;
@@ -21,23 +21,27 @@ void CreateList(struct node **plist){
 
 void InsertElement(struct node **plist, char element[]) {
   struct node **last = plist;
-  while (*last != NULL) {
+  while (*last != NULL) { //Looks for the last pointer
     last = &(*last)->next;
   };
-  *last = (struct node *) malloc(sizeof(struct node));
-  for (int i = 0; (element[i] != '\0') && (i < MAXLEN); i++)
+  *last = (struct node *) malloc(sizeof(struct node)); //Memory request for the new node
+  int i;
+  for (i = 0; (element[i] != '\0') && (i < MAXLEN); i++) //Saving command
     (*last)->com[i] = element[i];
+  (*last)->com[i-1] = '\0'; //Substitutes the \n at the end of stored commands by \0
   (*last)->next = NULL;
 };
 
 int RemoveElement(struct node **plist, int position){
-  struct node **pointertopointer = plist; //To aim the pointer in the list that aims the node to be removed
+  if (*plist == NULL) return -1;
+
+  struct node **pointertopointer = plist; //To aim to the pointer in the list that aims to the node to be removed
   for (int i = 0; i < position; i++) {
-    pointertopointer = &(*pointertopointer)->next;
     if (*pointertopointer == NULL) return -1;  //Index out of bounds
+    pointertopointer = &(*pointertopointer)->next;
   }
-  struct node *auxiliar = *pointertopointer;
-  *pointertopointer = (*pointertopointer)->next;
+  struct node *auxiliar = *pointertopointer;  //Auxiliar stores the memory address of the node to be removed
+  *pointertopointer = (*pointertopointer)->next; //The pointer in the list that aims to the expiring node now aims to the node after it (sometimes NULL)
   free(auxiliar);
   return 0;
 };
@@ -106,7 +110,7 @@ void pid(char *opcion){
         else{
             printf("%s : unrecognised command option\n", opcion);
         }
-    }    
+    }
 }
 
 void cdir(char * opcion){
@@ -135,15 +139,15 @@ void fecha_hora(char f_h){
 
 void hist(char * opcion){
   if (opcion != NULL) {
-    if (!strcmp(opcion,"-c")){
+    if (opcion[1] == 'c'){
       while (lista != NULL) RemoveElement(&lista,0);
       printf("Cleared command history\n");
     }else printf("%s : unrecognised command option\n",opcion);
   }
   else {
     struct node * pointer = lista;
-    for (int i = 0; pointer != NULL; i++) {
-      printf("%d > %s\n",(i + 1),pointer->com);
+    for (int i = 1; pointer != NULL; i++) {
+      printf("%d > %s\n",i,pointer->com);
       pointer = pointer->next;
     };
   }
@@ -185,6 +189,10 @@ void processInput(char comando[], int * salir){
     }
 }
 
+void disposeAll(struct node **plist) {
+  while (RemoveElement(plist,0) == 0);
+}
+
 int main(int argc, char const *argv[])
 {
     int salir = 0;
@@ -194,5 +202,6 @@ int main(int argc, char const *argv[])
         readInput(comando);
         processInput(comando, &salir);
     }
+    disposeAll(&lista);
     return 0;
 }
