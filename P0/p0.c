@@ -120,7 +120,9 @@ void cdir(char * opcion){
     }
     else
     {
-        chdir(opcion);
+        if (chdir(opcion)){
+            printf("Error: %s directory does not exist\n",opcion);
+        }
     }
 }
 
