@@ -120,7 +120,7 @@ void cdir(char * opcion){
     }
     else
     {
-        if (chdir(opcion)){
+        if (chdir(opcion)){ //if chdir() returns -1 it means an error ocurred
             printf("Error: %s directory does not exist\n",opcion);
         }
     }
@@ -140,8 +140,8 @@ void fecha_hora(char f_h){
 }
 
 void hist(char * opcion){
-  if (opcion != NULL) {
-    if (!strcmp(opcion,"-c")){
+  if (opcion != NULL) { //if there IS an option
+    if (!strcmp(opcion,"-c")){ //if that option is "-c"
       while (lista != NULL) RemoveElement(&lista,0);
       printf("Cleared command history\n");
     }else printf("%s : unrecognised command option\n",opcion);
