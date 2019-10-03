@@ -73,18 +73,18 @@ int TrocearCadena(char * cadena, char * trozos[]){
 // Funciones para las tareas de cada comando de la shell
 
 void autores(char * opcion){
-    if (opcion == NULL){
+    if (opcion == NULL){ //If there is no option
         printf("Carlos Torres Paz : carlos.torres\n");
         printf("Daniel Sergio Vega Rodríguez : d.s.vega\n");
     }
     else
     {        
-        if (opcion[1]=='n')
+        if (!strcmp(opcion,"-n"))
         {
             printf("Carlos Torres Paz\n");
             printf("Daniel Sergio Vega Rodríguez\n");
         }
-        else if (opcion[1]=='l')
+        else if (!strcmp(opcion, "-l"))
         {
             printf("carlos.torres\n");
             printf("d.s.vega\n");
@@ -103,7 +103,7 @@ void pid(char *opcion){
     }
     else
     {
-        if (opcion[1] == 'p')
+        if (!strcmp(opcion,"-p"))
         {
             printf("PID of parent process: %i\n", getppid());
         }
@@ -139,7 +139,7 @@ void fecha_hora(char f_h){
 
 void hist(char * opcion){
   if (opcion != NULL) {
-    if (opcion[1] == 'c'){
+    if (!strcmp(opcion,"-c")){
       while (lista != NULL) RemoveElement(&lista,0);
       printf("Cleared command history\n");
     }else printf("%s : unrecognised command option\n",opcion);
