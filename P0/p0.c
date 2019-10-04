@@ -126,16 +126,22 @@ void cdir(char * opcion){
     }
 }
 
-void fecha_hora(char f_h){
+void fecha_hora(char f_h, char * opcion){
     time_t now; //time type variable
     time(&now); //writes current time to NOW variable
     struct tm *local = localtime(&now); //a structure to separate minutes, hours, day, month, year
 
+    if (opcion == NULL){
     if (f_h == 'f'){
         printf("Today is %1.2d/%1.2d/%d\n",local->tm_mday, local->tm_mon+1, local->tm_year+1900);
     }
     else if (f_h == 'h'){
         printf("Right now it is %d:%d:%d\n",local->tm_hour,local->tm_min,local->tm_sec);
+    }
+    }
+    else
+    {
+        printf(" %s : unrecognised command option\n",opcion);
     }
 }
 
@@ -156,7 +162,8 @@ void hist(char * opcion){
 }
 
 void processInput(char comando[], int * salir){
-    char *trozos[2];
+    char *trozos[5]; //This array is of length 5 instead of 2 to prevent the program from crashing in case some user enters a third command option
+                    // this third option will be always ignored
     int nopc = TrocearCadena(comando, trozos);
 
     if (nopc > 0){
@@ -172,10 +179,10 @@ void processInput(char comando[], int * salir){
             cdir(trozos[1]);
         }
         else if (!strcmp(trozos[0],"fecha")){
-            fecha_hora('f');
+            fecha_hora('f',trozos[1]);
         }
         else if (!strcmp(trozos[0],"hora")){
-            fecha_hora('h');
+            fecha_hora('h',trozos[1]);
         }
         else if (!strcmp(trozos[0],"hist"))
         {
