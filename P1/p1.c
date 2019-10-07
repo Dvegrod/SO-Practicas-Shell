@@ -4,7 +4,8 @@
 #include <time.h>
 #include <sys/types.h>
 #include <unistd.h>
-#define MAXLEN 255
+#define MAXLEN 256 //maximum length of strings (arrays of 256 chars)
+#define MAX_N_ARG 32 //maximum number of arguments to a shell command
 
 //Lista:
 
@@ -44,7 +45,7 @@ int RemoveElement(struct node **plist, int position){
   *pointertopointer = (*pointertopointer)->next; //The pointer in the list that aims to the expiring node now aims to the node after it (sometimes NULL)
   free(auxiliar);
   return 0;
-};
+}
 
 //Shell:
 
@@ -72,7 +73,7 @@ int TrocearCadena(char * cadena, char * trozos[]){
 
 // Funciones para las tareas de cada comando de la shell
 
-void autores(char * opcion){
+void autores(const char * opcion){
     if (opcion == NULL){ //If there is no option
         printf("Carlos Torres Paz : carlos.torres\n");
         printf("Daniel Sergio Vega Rodríguez : d.s.vega\n");
@@ -96,7 +97,7 @@ void autores(char * opcion){
     }
 }
 
-void pid(char *opcion){
+void pid(const char *opcion){
     if (opcion==NULL)
     {
         printf("PID of Shell: %i\n", getpid());
@@ -113,7 +114,7 @@ void pid(char *opcion){
     }
 }
 
-void cdir(char * opcion){
+void cdir(const char * opcion){
     char buf[MAXLEN];
     if (opcion == NULL){
         printf("%s\n",getcwd(buf,MAXLEN));
@@ -126,7 +127,7 @@ void cdir(char * opcion){
     }
 }
 
-void fecha_hora(char f_h){
+void fecha_hora(const char f_h){
     time_t now; //time type variable
     time(&now); //writes current time to NOW variable
     struct tm *local = localtime(&now); //a structure to separate minutes, hours, day, month, year
@@ -139,10 +140,14 @@ void fecha_hora(char f_h){
     }
 }
 
-void hist(char * opcion){
+void disposeAll(struct node **plist) {
+  while (RemoveElement(plist,0) == 0);
+}
+
+void hist(const char * opcion){
   if (opcion != NULL) { //if there IS an option
     if (!strcmp(opcion,"-c")){ //if that option is "-c"
-      while (lista != NULL) RemoveElement(&lista,0);
+      disposeAll(&lista);
       printf("Cleared command history\n");
     }else printf("%s : unrecognised command option\n",opcion);
   }
@@ -155,8 +160,30 @@ void hist(char * opcion){
   }
 }
 
+void crear(const char * trozos[]){
+
+}
+
+void borrar(const char * trozos[]){
+
+}
+
+char * getInfo(const char *path){
+
+}
+
+void info(const char * trozos[]){
+
+}
+
+void listar(const char * trozos[]){
+
+}
+
+//Función para decidir qué comando se va a ejecutar
+
 void processInput(char comando[], int * salir){
-    char *trozos[2];
+    char *trozos[MAX_N_ARG];
     int nopc = TrocearCadena(comando, trozos);
 
     if (nopc > 0){
@@ -177,9 +204,20 @@ void processInput(char comando[], int * salir){
         else if (!strcmp(trozos[0],"hora")){
             fecha_hora('h');
         }
-        else if (!strcmp(trozos[0],"hist"))
-        {
+        else if (!strcmp(trozos[0],"hist")){
             hist(trozos[1]);
+        }
+        else if (!strcmp(trozos[0],"crear")){
+            crear(trozos);
+        }
+        else if (!strcmp(trozos[0],"borrar")){
+            borrar(trozos);
+        }
+        else if (!strcmp(trozos[0], "info")){
+            info(trozos);
+        }
+        else if (!strcmp(trozos[0],"listar")){
+            listar(trozos);
         }
         else if (!strcmp(trozos[0],"fin") || !strcmp(trozos[0],"end") || !strcmp(trozos[0], "exit")){
             *salir = 1;
@@ -191,12 +229,7 @@ void processInput(char comando[], int * salir){
     }
 }
 
-void disposeAll(struct node **plist) {
-  while (RemoveElement(plist,0) == 0);
-}
-
-int main(int argc, char const *argv[])
-{
+int main(int argc, char const *argv[]){
     int salir = 0;
     char comando[MAXLEN];
     while(!salir){
