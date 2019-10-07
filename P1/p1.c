@@ -59,7 +59,8 @@ void printPrompt(){
 
 void readInput(char comando[]){
     fgets(comando,MAXLEN,stdin);
-    InsertElement(&lista, comando);
+    if (comando[0] != '\n')
+      InsertElement(&lista, comando);
 }
 
 int TrocearCadena(char * cadena, char * trozos[]){
@@ -79,7 +80,7 @@ void autores(const char * opcion){
         printf("Daniel Sergio Vega Rodríguez : d.s.vega\n");
     }
     else
-    {        
+    {
         if (!strcmp(opcion,"-n"))
         {
             printf("Carlos Torres Paz\n");
