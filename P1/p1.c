@@ -162,15 +162,15 @@ void hist(const char * opcion){
 }
 
 void crear(const char * trozos[]){
-
+    
 }
 
 void borrar(const char * trozos[]){
 
 }
 
-char * getInfo(const char *path){
-
+char ** getInfo(const char *path){
+    char ** strfileinfo = (char **) malloc(12 * sizeof(char *));
 }
 
 void info(const char * trozos[]){
@@ -228,6 +228,39 @@ void processInput(char comando[], int * salir){
             printf("%s : unrecognised command\n",trozos[0]);
         }
     }
+}
+
+int processInput(char comando[], struct extra_inf *ex_inf){
+    struct{
+        char * cmd_name;
+        int (* cmd_fun) (const char * trozos[], int ntrozos, struct extra_inf *ex_inf)
+    } cmds[] = {
+        {"autores", autores},
+        {"pid", pid},
+        {"cdir", cdir},
+        {"fecha", fecha},
+        {"hora", hora},
+        {"hist", hist},
+        {"crear", crear},
+        {"borrar", borrar},
+        {"info", info},
+        {"listar", listar},
+        {"fin", salir},
+        {"end", salir},
+        {"exit", salir},
+        {NULL, NULL}
+    };
+    
+    for (int i = 0; cmds[i].cmd_name != NULL; i++)
+    {
+        if (!strcmp(trozos[0],cmds[i].cmd_name)){
+            cmds[i].cmd_fun (trozos, ntrozos, ex_inf);
+            break;
+        } //if
+    } //for
+    if (cmds[i].cmd_name == NULL){ //cmd not found
+        printf("cmd not found");
+    } //cmd not found
 }
 
 int main(int argc, char const *argv[]){
