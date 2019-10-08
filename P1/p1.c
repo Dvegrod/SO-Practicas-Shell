@@ -5,6 +5,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <pwd.h>
+#include <grp.h>
+#include <errno.h>
 #define MAXLEN 256 //maximum length of strings (arrays of 256 chars)
 #define MAX_N_ARG 32 //maximum number of arguments to a shell command
 
@@ -42,6 +45,10 @@ int RemoveElement(struct node **plist, int position){
 }
 
 //Shell:
+//Estructuras:
+struct strfiledata {
+  char * inodenum,*filetype,*permissions,*hlinksnum,*user,*group,*size,*date,*name;
+};
 
 //Funciones para leer los comandos de la Shell
 
@@ -250,24 +257,32 @@ int borrar(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
 
 }
 
-char ** getInfo(const char *path){
-  char ** strfileinfo = (char **) malloc(11*sizeof(char *)); //Init
+struct strfiledata getInfo(const char *path){
+  struct strfiledata strfinfo;
   struct stat *finfo = NULL;
-  lstat(path,finfo);
-  sprintf(strfileinfo[0],"%lu",finfo->st_ino); //Inode number
-  *(strfileinfo[1]) = TipoFichero(finfo->st_mode); //File type
-  strfileinfo[2] = ConvierteModo2(finfo->st_mode);//Permissions
-  sprintf(strfileinfo[3],"%lu",finfo->st_nlink); //Hard links
-  //owner
-  //group
-  sprintf(strfileinfo[6],"%lu",finfo->st_size); //File size
-  //finfo->st_mtim.tv_sec
-  //
-  //
+  if (lstat(path,finfo) < 0) printf("%s",strerror(errno)); //Syscall
+  //INODE NUMBER
+  sprintf(strfinfo.inodenum,"%lu",finfo->st_ino);
+  //TYPE
+  *strfinfo.filetype = TipoFichero(finfo->st_mode);
+  //PERMISSIONS
+  strfinfo.permissions = ConvierteModo2(finfo->st_mode);
+  //HARD LINK NUMBER
+  sprintf(strfinfo.hlinksnum,"%lu",finfo->st_nlink);
+  //USER
+  strfinfo.user = getpwuid(finfo->st_uid)->pw_name;
+  //GROUP
+  strfinfo.group = getgrgid(finfo->st_gid)->gr_name;
+  //SIZE
+  sprintf(strfinfo.size,"%lu",finfo->st_size);
+  //DATE FORMAT
+  struct tm * mtime = localtime(&finfo->st_mtime);
+  strftime(strfinfo.date,20,"%b %d %T",mtime);
+  //FILE NAME: cuts the rest of the path
   int i = 0,j = 0;
   while (path[i] != '\0') if (path[i] == '/') j = i + 1;
-  sprintf(strfileinfo[10],"%s",&path[j]); //File name
-  return strfileinfo;
+  sprintf(strfinfo.name,"%s",&path[j]); //File name
+  return strfinfo;
 }
 
 int info(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
