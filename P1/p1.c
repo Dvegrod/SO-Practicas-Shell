@@ -3,6 +3,7 @@
 #include <string.h>
 #include <time.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <unistd.h>
 #define MAXLEN 256 //maximum length of strings (arrays of 256 chars)
 #define MAX_N_ARG 32 //maximum number of arguments to a shell command
@@ -76,32 +77,32 @@ int TrocearCadena(char * cadena, char * trozos[]){
 
 char TipoFichero (mode_t m){
     switch (m&S_IFMT) { /*and bit a bit con los bits de formato,0170000 */
-        case S_IFSOCK: return ’s’; /*socket */
-        case S_IFLNK: return ’l’; /*symbolic link*/
-        case S_IFREG: return ’-’; /* fichero normal*/
-        case S_IFBLK: return ’b’; /*block device*/
-        case S_IFDIR: return ’d’; /*directorio */
-        case S_IFCHR: return ’c’; /*char device*/
-        case S_IFIFO: return ’p’; /*pipe*/
-        default: return ’?’; /*desconocido, no deberia aparecer*/
+        case S_IFSOCK: return 's'; /*socket */
+        case S_IFLNK: return 'l'; /*symbolic link*/
+        case S_IFREG: return '-'; /* fichero normal*/
+        case S_IFBLK: return 'b'; /*block device*/
+        case S_IFDIR: return 'd'; /*directorio */
+        case S_IFCHR: return 'c'; /*char device*/
+        case S_IFIFO: return 'p'; /*pipe*/
+        default: return '?'; /*desconocido, no deberia aparecer*/
     }
 }
 
 char * ConvierteModo (mode_t m, char *permisos){
     strcpy (permisos,"---------- ");
     permisos[0]=TipoFichero(m);
-    if (m&S_IRUSR) permisos[1]=’r’; /*propietario*/
-    if (m&S_IWUSR) permisos[2]=’w’;
-    if (m&S_IXUSR) permisos[3]=’x’;
-    if (m&S_IRGRP) permisos[4]=’r’; /*grupo*/
-    if (m&S_IWGRP) permisos[5]=’w’;
-    if (m&S_IXGRP) permisos[6]=’x’;
-    if (m&S_IROTH) permisos[7]=’r’; /*resto*/
-    if (m&S_IWOTH) permisos[8]=’w’;
-    if (m&S_IXOTH) permisos[9]=’x’;
-    if (m&S_ISUID) permisos[3]=’s’; /*setuid, setgid y stickybit*/
-    if (m&S_ISGID) permisos[6]=’s’;
-    if (m&S_ISVTX) permisos[9]=’t’;
+    if (m&S_IRUSR) permisos[1]='r'; /*propietario*/
+    if (m&S_IWUSR) permisos[2]='w';
+    if (m&S_IXUSR) permisos[3]='x';
+    if (m&S_IRGRP) permisos[4]='r'; /*grupo*/
+    if (m&S_IWGRP) permisos[5]='w';
+    if (m&S_IXGRP) permisos[6]='x';
+    if (m&S_IROTH) permisos[7]='r'; /*resto*/
+    if (m&S_IWOTH) permisos[8]='w';
+    if (m&S_IXOTH) permisos[9]='x';
+    if (m&S_ISUID) permisos[3]='s'; /*setuid, setgid y stickybit*/
+    if (m&S_ISGID) permisos[6]='s';
+    if (m&S_ISVTX) permisos[9]='t';
     return permisos;
 }
 
@@ -109,18 +110,18 @@ char * ConvierteModo2 (mode_t m){
     static char permisos[12];
     strcpy (permisos,"---------- ");
     permisos[0]=TipoFichero(m);
-    if (m&S_IRUSR) permisos[1]=’r’; /*propietario*/
-    if (m&S_IWUSR) permisos[2]=’w’;
-    if (m&S_IXUSR) permisos[3]=’x’;
-    if (m&S_IRGRP) permisos[4]=’r’; /*grupo*/
-    if (m&S_IWGRP) permisos[5]=’w’;
-    if (m&S_IXGRP) permisos[6]=’x’;
-    if (m&S_IROTH) permisos[7]=’r’; /*resto*/
-    if (m&S_IWOTH) permisos[8]=’w’;
-    if (m&S_IXOTH) permisos[9]=’x’;
-    if (m&S_ISUID) permisos[3]=’s’; /*setuid, setgid y stickybit*/
-    if (m&S_ISGID) permisos[6]=’s’;
-    if (m&S_ISVTX) permisos[9]=’t’;
+    if (m&S_IRUSR) permisos[1]='r'; /*propietario*/
+    if (m&S_IWUSR) permisos[2]='w';
+    if (m&S_IXUSR) permisos[3]='x';
+    if (m&S_IRGRP) permisos[4]='r'; /*grupo*/
+    if (m&S_IWGRP) permisos[5]='w';
+    if (m&S_IXGRP) permisos[6]='x';
+    if (m&S_IROTH) permisos[7]='r'; /*resto*/
+    if (m&S_IWOTH) permisos[8]='w';
+    if (m&S_IXOTH) permisos[9]='x';
+    if (m&S_ISUID) permisos[3]='s'; /*setuid, setgid y stickybit*/
+    if (m&S_ISGID) permisos[6]='s';
+    if (m&S_ISVTX) permisos[9]='t';
     return (permisos);
 }
 
@@ -129,18 +130,18 @@ char * ConvierteModo3 (mode_t m){
     permisos=(char *) malloc (12);
     strcpy (permisos,"---------- ");
     permisos[0]=TipoFichero(m);
-    if (m&S_IRUSR) permisos[1]=’r’; /*propietario*/
-    if (m&S_IWUSR) permisos[2]=’w’;
-    if (m&S_IXUSR) permisos[3]=’x’;
-    if (m&S_IRGRP) permisos[4]=’r’; /*grupo*/
-    if (m&S_IWGRP) permisos[5]=’w’;
-    if (m&S_IXGRP) permisos[6]=’x’;
-    if (m&S_IROTH) permisos[7]=’r’; /*resto*/
-    if (m&S_IWOTH) permisos[8]=’w’;
-    if (m&S_IXOTH) permisos[9]=’x’;
-    if (m&S_ISUID) permisos[3]=’s’; /*setuid, setgid y stickybit*/
-    if (m&S_ISGID) permisos[6]=’s’;
-    if (m&S_ISVTX) permisos[9]=’t’;
+    if (m&S_IRUSR) permisos[1]='r'; /*propietario*/
+    if (m&S_IWUSR) permisos[2]='w';
+    if (m&S_IXUSR) permisos[3]='x';
+    if (m&S_IRGRP) permisos[4]='r'; /*grupo*/
+    if (m&S_IWGRP) permisos[5]='w';
+    if (m&S_IXGRP) permisos[6]='x';
+    if (m&S_IROTH) permisos[7]='r'; /*resto*/
+    if (m&S_IWOTH) permisos[8]='w';
+    if (m&S_IXOTH) permisos[9]='x';
+    if (m&S_ISUID) permisos[3]='s'; /*setuid, setgid y stickybit*/
+    if (m&S_ISGID) permisos[6]='s';
+    if (m&S_ISVTX) permisos[9]='t';
     return (permisos);
 }
 
@@ -242,7 +243,23 @@ void borrar(const char * trozos[]){
 }
 
 char ** getInfo(const char *path){
-    char ** strfileinfo = (char **) malloc(12 * sizeof(char *));
+  char ** strfileinfo = (char **) malloc(11*sizeof(char *)); //Init
+  struct stat *finfo = NULL;
+  lstat(path,finfo);
+  sprintf(strfileinfo[0],"%lu",finfo->st_ino); //Inode number
+  *(strfileinfo[1]) = TipoFichero(finfo->st_mode); //File type
+  strfileinfo[2] = ConvierteModo2(finfo->st_mode);//Permissions
+  sprintf(strfileinfo[3],"%lu",finfo->st_nlink); //Hard links
+  //owner
+  //group
+  sprintf(strfileinfo[6],"%lu",finfo->st_size); //File size
+  //finfo->st_mtim.tv_sec
+  //
+  //
+  int i = 0,j = 0;
+  while (path[i] != '\0') if (path[i] == '/') j = i + 1;
+  sprintf(strfileinfo[10],"%s",&path[j]); //File name
+  return strfileinfo;
 }
 
 void info(const char * trozos[]){
