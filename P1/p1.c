@@ -10,13 +10,6 @@
 
 //Lista:
 
-struct node {
-   char com[MAXLEN];
-   struct node *next;
-};
-
-struct node * lista;
-
 void CreateList(struct node **plist){
     *plist = NULL;
 }
@@ -52,16 +45,14 @@ int RemoveElement(struct node **plist, int position){
 
 //Funciones para leer los comandos de la Shell
 
-struct node *lista;
-
 void printPrompt(){
     printf("# ");
 }
 
-void readInput(char comando[]){
+void readInput(char comando[], struct node* lista){
     fgets(comando,MAXLEN,stdin);
     if (comando[0] != '\n')
-      InsertElement(&lista, comando);
+        InsertElement(&lista, comando);
 }
 
 int TrocearCadena(char * cadena, char * trozos[]){
@@ -147,7 +138,8 @@ char * ConvierteModo3 (mode_t m){
 
 // Funciones para las tareas de cada comando de la shell
 
-void autores(const char * opcion){
+int autores(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
+    char *opcion = trozos[1];
     if (opcion == NULL){ //If there is no option
         printf("Carlos Torres Paz : carlos.torres\n");
         printf("Daniel Sergio Vega Rodríguez : d.s.vega\n");
@@ -169,9 +161,11 @@ void autores(const char * opcion){
             printf("%s : unrecognised command option\n",opcion);
         }
     }
+    return 0;
 }
 
-void pid(const char *opcion){
+int pid(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
+    char *opcion = trozos[1];
     if (opcion==NULL)
     {
         printf("PID of Shell: %i\n", getpid());
@@ -184,11 +178,14 @@ void pid(const char *opcion){
         }
         else{
             printf("%s : unrecognised command option\n", opcion);
+            return -1;
         }
     }
+    return 0;
 }
 
-void cdir(const char * opcion){
+int cdir(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
+    char *opcion = trozos[1];
     char buf[MAXLEN];
     if (opcion == NULL){
         printf("%s\n",getcwd(buf,MAXLEN));
@@ -197,48 +194,59 @@ void cdir(const char * opcion){
     {
         if (chdir(opcion)){ //if chdir() returns -1 it means an error ocurred
             printf("Error: %s directory does not exist\n",opcion);
+            return -1;
         }
     }
+    return 0;
 }
 
-void fecha_hora(const char f_h){
+int fecha(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
     time_t now; //time type variable
     time(&now); //writes current time to NOW variable
     struct tm *local = localtime(&now); //a structure to separate minutes, hours, day, month, year
+    printf("Today is %1.2d/%1.2d/%d\n",local->tm_mday, local->tm_mon+1, local->tm_year+1900);
+    return 0;
+}
 
-    if (f_h == 'f'){
-        printf("Today is %1.2d/%1.2d/%d\n",local->tm_mday, local->tm_mon+1, local->tm_year+1900);
-    }
-    else if (f_h == 'h'){
-        printf("Right now it is %d:%d:%d\n",local->tm_hour,local->tm_min,local->tm_sec);
-    }
+int hora(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
+    time_t now; //time type variable
+    time(&now); //writes current time to NOW variable
+    struct tm *local = localtime(&now); //a structure to separate minutes, hours, day, month, year
+    printf("Right now it is %d:%d:%d\n",local->tm_hour,local->tm_min,local->tm_sec);
+    return 0;
 }
 
 void disposeAll(struct node **plist) {
   while (RemoveElement(plist,0) == 0);
 }
 
-void hist(const char * opcion){
-  if (opcion != NULL) { //if there IS an option
-    if (!strcmp(opcion,"-c")){ //if that option is "-c"
-      disposeAll(&lista);
-      printf("Cleared command history\n");
-    }else printf("%s : unrecognised command option\n",opcion);
-  }
-  else {
-    struct node * pointer = lista;
-    for (int i = 1; pointer != NULL; i++) {
-      printf("%d > %s\n",i,pointer->com);
-      pointer = pointer->next;
-    };
-  }
+int hist(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
+    char *opcion = trozos[1];
+    if (opcion != NULL) { //if there IS an option
+        if (!strcmp(opcion,"-c")){ //if that option is "-c"
+        disposeAll(&lista);
+        printf("Cleared command history\n");
+    }
+    else{
+        printf("%s : unrecognised command option\n",opcion);
+        return -1;
+    }
+    }
+    else {
+        struct node * pointer = lista;
+        for (int i = 1; pointer != NULL; i++) {
+            printf("%d > %s\n",i,pointer->com);
+            pointer = pointer->next;
+        };
+    }
+    return 0;
 }
 
-void crear(const char * trozos[]){
+int crear(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
     
 }
 
-void borrar(const char * trozos[]){
+int borrar(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
 
 }
 
@@ -262,64 +270,28 @@ char ** getInfo(const char *path){
   return strfileinfo;
 }
 
-void info(const char * trozos[]){
+int info(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
 
 }
 
-void listar(const char * trozos[]){
+int listar(const char * trozos[], int ntrozos, struct extra_inf *ex_inf){
 
+}
+
+int salir(const char *trozos[], int ntrozos, struct extra_inf *ex_inf){
+    return 1;
 }
 
 //Función para decidir qué comando se va a ejecutar
 
-void processInput(char comando[], int * salir){
-    char *trozos[MAX_N_ARG];
-    int nopc = TrocearCadena(comando, trozos);
-
-    if (nopc > 0){
-        if (!strcmp(trozos[0],"autores")){
-                autores(trozos[1]);
-        }
-        else if (!strcmp(trozos[0],"pid"))
-        {
-            pid(trozos[1]);
-        }
-        else if (!strcmp(trozos[0],"cdir"))
-        {
-            cdir(trozos[1]);
-        }
-        else if (!strcmp(trozos[0],"fecha")){
-            fecha_hora('f');
-        }
-        else if (!strcmp(trozos[0],"hora")){
-            fecha_hora('h');
-        }
-        else if (!strcmp(trozos[0],"hist")){
-            hist(trozos[1]);
-        }
-        else if (!strcmp(trozos[0],"crear")){
-            crear(trozos);
-        }
-        else if (!strcmp(trozos[0],"borrar")){
-            borrar(trozos);
-        }
-        else if (!strcmp(trozos[0], "info")){
-            info(trozos);
-        }
-        else if (!strcmp(trozos[0],"listar")){
-            listar(trozos);
-        }
-        else if (!strcmp(trozos[0],"fin") || !strcmp(trozos[0],"end") || !strcmp(trozos[0], "exit")){
-            *salir = 1;
-        }
-        else
-        {
-            printf("%s : unrecognised command\n",trozos[0]);
-        }
-    }
-}
-
 int processInput(char comando[], struct extra_inf *ex_inf){
+
+
+    char *trozos[MAX_N_ARG];
+    int ntrozos = TrocearCadena(comando,trozos);
+    int i =0;
+    int return_value  =0;
+
     struct{
         char * cmd_name;
         int (* cmd_fun) (const char * trozos[], int ntrozos, struct extra_inf *ex_inf)
@@ -340,26 +312,40 @@ int processInput(char comando[], struct extra_inf *ex_inf){
         {NULL, NULL}
     };
     
-    for (int i = 0; cmds[i].cmd_name != NULL; i++)
+    for (i = 0; cmds[i].cmd_name != NULL; i++)
     {
         if (!strcmp(trozos[0],cmds[i].cmd_name)){
-            cmds[i].cmd_fun (trozos, ntrozos, ex_inf);
+            return_value = cmds[i].cmd_fun (trozos, ntrozos, ex_inf);
             break;
         } //if
     } //for
     if (cmds[i].cmd_name == NULL){ //cmd not found
-        printf("cmd not found");
+        printf(" %s : unrecognised command\n", trozos[0]);
+        return -1;
     } //cmd not found
+    return return_value;
 }
 
 int main(int argc, char const *argv[]){
-    int salir = 0;
     char comando[MAXLEN];
-    while(!salir){
+
+    struct node {
+        char com[MAXLEN];
+        struct node *next;
+    };
+
+    struct extra_inf {
+        struct node * lista;
+    };
+
+    struct extra_inf * ex_inf;
+    ex_inf = (struct extra_inf *) malloc(sizeof(struct extra_inf));
+
+    do{
         printPrompt();
-        readInput(comando);
-        processInput(comando, &salir);
-    }
-    disposeAll(&lista);
+        readInput(comando, ex_inf->lista);
+    } while(processInput(comando, &salir) != 1);
+
+    disposeAll(&(ex_inf-> lista));
     return 0;
 }
