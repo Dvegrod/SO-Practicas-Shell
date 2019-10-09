@@ -21,7 +21,7 @@ typedef struct extra_info {
 } EXINF;
 
 struct strfiledata {
-  char * inodenum,*filetype,*permissions,*hlinksnum,*user,*group,*size,*date,*name;
+  char inodenum[1000],permissions[12],hlinksnum[10],user[200],group[200],size[10],date[20],name[200];
 };
 
 //Lista:
@@ -35,7 +35,7 @@ void InsertElement(struct node ** last, char *element){
     while (*last != NULL){ //'last' points to the last node
         last = &((*last)->next); //moves one node forward
     }
-    *last = malloc(sizeof(struct node)); //allocates memory for the new node
+    *last = (struct node *) malloc(sizeof(struct node)); //allocates memory for the new node
     (*last)->next = NULL; //sets to null the new end of the list
     for (i = 0; (element[i] != '\0') && (i < MAXLEN); i++)
     {
@@ -59,14 +59,14 @@ int RemoveElement(struct node **plist, int position){
 }
 
 void disposeAll(struct node ** ptolist) {
-  // while (RemoveElement(ptolist,0) == 0);
-  struct node * aux;
+  while (RemoveElement(ptolist,0) == 0);
+  /* struct node * aux;//No hay diferencia ??
   while (*ptolist != NULL)
   {
       aux = *ptolist;
       *ptolist = aux->next;
       free(aux);
-  }
+      }*/
 }
 
 //Shell:
@@ -276,36 +276,38 @@ int borrar(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-struct strfiledata getInfo(char *path){
-  struct strfiledata strfinfo;
-  struct stat *finfo = NULL;
-  if (lstat(path,finfo) < 0) printf("%s",strerror(errno)); //Syscall
+struct strfiledata * getInfo(char *path){
+  struct strfiledata * strfinfo = NULL; //Struct that will contain the file info formatted as "strings"
+  struct stat finfo; //Data buffer for fstat
+  //MALLOC
+  strfinfo = (struct strfiledata *) malloc(sizeof(struct strfiledata));
+  if (lstat(path,&finfo) < 0) printf("%s",strerror(errno)); //Syscall
   //INODE NUMBER
-  sprintf(strfinfo.inodenum,"%lu",finfo->st_ino);
-  //TYPE
-  *strfinfo.filetype = TipoFichero(finfo->st_mode);
-  //PERMISSIONS
-  strfinfo.permissions = ConvierteModo2(finfo->st_mode);
+  sprintf(strfinfo->inodenum,"%lu",finfo.st_ino);
+  //TYPE & PERMISSIONS
+  sprintf(strfinfo->permissions,"%s",ConvierteModo2(finfo.st_mode));
   //HARD LINK NUMBER
-  sprintf(strfinfo.hlinksnum,"%lu",finfo->st_nlink);
+  sprintf(strfinfo->hlinksnum,"%lu",finfo.st_nlink);
   //USER
-  strfinfo.user = getpwuid(finfo->st_uid)->pw_name;
+  sprintf(strfinfo->user,"%s",getpwuid(finfo.st_uid)->pw_name);
   //GROUP
-  strfinfo.group = getgrgid(finfo->st_gid)->gr_name;
+  sprintf(strfinfo->group,"%s",getgrgid(finfo.st_uid)->gr_name);
   //SIZE
-  sprintf(strfinfo.size,"%lu",finfo->st_size);
+  sprintf(strfinfo->size,"%lu",finfo.st_size);
   //DATE FORMAT
-  struct tm * mtime = localtime(&finfo->st_mtime);
-  strftime(strfinfo.date,20,"%b %d %T",mtime);
+  struct tm * mtime = localtime(&finfo.st_mtime);
+  strftime(strfinfo->date,20,"%b %d %T",mtime);
   //FILE NAME: cuts the rest of the path
-  int i = 0,j = 0;
-  while (path[i] != '\0') if (path[i] == '/') j = i + 1;
-  sprintf(strfinfo.name,"%s",&path[j]); //File name
+  int j=0;
+  for (int i = 0; path[i] != '\0'; i++) if (path[i] == '/') j = i+1;
+  sprintf(strfinfo->name,"%s",&path[j]); //File name
   return strfinfo;
 }
 
 int info(char * trozos[], int ntrozos, struct extra_info *ex_inf){
-    return 0;
+  /*struct strfiledata * x = getInfo("/home/dvegrod/FIC/C3/SO/proyectos/SO-Practicas-Shell");;
+    printf("%s %s %s %s %s %s %s %s",x->inodenum,x->permissions,x->hlinksnum,x->user,x->group,x->size,x->date,x->name);*/
+  return 0;
 }
 
 int listar(char * trozos[], int ntrozos, struct extra_info *ex_inf){
@@ -375,6 +377,7 @@ int main(int argc, char const *argv[]){
         readInput(comando, ex_inf);
     } while(processInput(comando, ex_inf) != 1);
 
-    disposeAll(&(ex_inf->lista));
+    disposeAll(&ex_inf->lista);
+    free(ex_inf);
     return 0;
 }
