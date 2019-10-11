@@ -21,7 +21,7 @@ typedef struct extra_info {
 } EXINF;
 
 struct strfiledata {
-  char inodenum[1000],permissions[12],hlinksnum[10],user[200],group[200],size[10],date[20],name[200];
+  char inodenum[1000],permissions[12],hlinksnum[10],user[200],group[200],size[10],date[20],name[200],linksto[200];
 };
 
 //Lista:
@@ -281,7 +281,10 @@ struct strfiledata * getInfo(char *path){
   struct stat finfo; //Data buffer for fstat
   //MALLOC
   strfinfo = (struct strfiledata *) malloc(sizeof(struct strfiledata));
-  if (lstat(path,&finfo) < 0) printf("%s",strerror(errno)); //Syscall
+  if (lstat(path,&finfo) < 0) {
+    printf("%s\n",strerror(errno)); //Syscall
+    return NULL;
+  }
   //INODE NUMBER
   sprintf(strfinfo->inodenum,"%lu",finfo.st_ino);
   //TYPE & PERMISSIONS
@@ -301,12 +304,23 @@ struct strfiledata * getInfo(char *path){
   int j=0;
   for (int i = 0; path[i] != '\0'; i++) if (path[i] == '/') j = i+1;
   sprintf(strfinfo->name,"%s",&path[j]); //File name
+  //LINKS TO
+  if (readlink(path,strfinfo->linksto,200) == -1) {
+    if (errno != 22) printf("%s",strerror(errno));
+    };
   return strfinfo;
 }
 
 int info(char * trozos[], int ntrozos, struct extra_info *ex_inf){
-  /*struct strfiledata * x = getInfo("/home/dvegrod/FIC/C3/SO/proyectos/SO-Practicas-Shell");;
-    printf("%s %s %s %s %s %s %s %s",x->inodenum,x->permissions,x->hlinksnum,x->user,x->group,x->size,x->date,x->name);*/
+  for (int i = 1; i < ntrozos; i++) {
+    struct strfiledata *  data = getInfo(trozos[i]);
+    if (data == NULL) return -1;
+    printf("%8s %s %2s %8s %8s %8s %s %8s",data->inodenum,data->permissions,data->hlinksnum,data->user,data->group,
+           data->size,data->date,data->name);
+    if (data->linksto[0] != '\0') printf(" -> %s",data->linksto);
+    printf("\n");
+    free(data);
+  }
   return 0;
 }
 
