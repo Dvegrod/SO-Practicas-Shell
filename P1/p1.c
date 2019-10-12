@@ -4,6 +4,7 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <fcntl.h>
 #include <unistd.h>
 #include <pwd.h>
 #include <grp.h>
@@ -269,7 +270,28 @@ int hist(char * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int crear(char * trozos[], int ntrozos, struct extra_info *ex_inf){
-    return 0;
+    int fd;
+    if (!strcmp(trozos[1],"-d")){ //creates a directory
+        printf(" create directory\n");
+        return 0;
+    }
+    else if ((trozos[1][0] == '-') && (trozos[1][0] != 'd')){ //non valid option
+        printf(" %s : unrecognised command option\n", trozos[1]);
+        return -1;
+    }
+    else
+    {
+        fd = open(trozos[1], O_CREAT | O_EXCL | S_IRWXU);
+        if (fd == -1){
+            printf(" Error: File %s already exists\n",trozos[1]);
+            return -1;
+        }
+        else{
+            printf(" File %s created\n", trozos[1]);
+            close(fd);
+            return 0;
+        }
+    }
 }
 
 int borrar(char * trozos[], int ntrozos, struct extra_info *ex_inf){
