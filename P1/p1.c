@@ -61,7 +61,7 @@ int RemoveElement(struct node **plist, int position){
 
 void disposeAll(struct node ** ptolist) {
   while (RemoveElement(ptolist,0) == 0);
-  /* struct node * aux;//No hay diferencia ??
+  /* struct node * aux; //Otra posibilidad
   while (*ptolist != NULL)
   {
       aux = *ptolist;
@@ -272,33 +272,74 @@ int hist(char * trozos[], int ntrozos, struct extra_info *ex_inf){
 int crear(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     int fd;
     if (!strcmp(trozos[1],"-d")){ //creates a directory
-        printf(" create directory\n");
-        return 0;
-    }
+        if (trozos[2] == NULL){
+            printf("LISTAR DIRECTORIO\n"); //list directory. we need to implement LISTAR first
+            return 0;
+        }
+        else{
+            if (!mkdir(trozos[2], S_IRWXU | S_IRWXG)){ //creates directory
+                printf(" Directory %s has been created\n", trozos[2]);
+                return 0;
+            }
+            else{
+                if (errno = EEXIST){
+                    printf(" Error: File or directory %s already exists\n", trozos[2]); //file already exists
+                    return -1;
+                }
+                else{
+                    printf(" Error: Directory %s could not be created\n", trozos[2]); //other errors
+                    return -1;
+                }
+            }//else
+        }//else
+    }//if 
     else if ((trozos[1][0] == '-') && (trozos[1][0] != 'd')){ //non valid option
         printf(" %s : unrecognised command option\n", trozos[1]);
         return -1;
-    }
-    else
+    } //else if
+    else    //tries to create a file
     {
-        fd = open(trozos[1], O_CREAT | O_EXCL | S_IRWXU);
+        fd = open(trozos[1], O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); //system call to create the file
         if (fd == -1){
-            printf(" Error: File %s already exists\n",trozos[1]);
-            return -1;
+            if (errno = EEXIST){ //file exists
+                printf(" Error: File %s already exists\n",trozos[1]);
+                return -1;
+            }
+            else{ //other errors
+                printf(" Error: file %s could not be created\n", trozos[1]);
+                return -1;
+            }
         }
         else{
-            printf(" File %s created\n", trozos[1]);
-            close(fd);
+            printf(" File %s created\n", trozos[1]); //file created successfully
+            close(fd); //closes the file after being created
             return 0;
         }
     }
 }
 
 int borrar(char * trozos[], int ntrozos, struct extra_info *ex_inf){
-    return 0;
+    if (!strcmp(trozos[1], "-r")){ //if the -r flag is specified
+        printf(" -r flag :D\n"); //recursive directory deleting. we need to implement LISTAR first
+        return 0;
+    }
+    else if ((trozos[1][0] == '-') && (trozos[1][1] != 'r')){ //not valid flag
+        printf(" %s: unrecognised command option", trozos[1]);
+        return -1;
+    }
+    else{ //no flag is specified
+        if (remove(trozos[1]) == -1){
+            printf(" Error: File %s could not be deleted\n", trozos[1]);
+            return -1;
+        }
+        else{
+            printf(" File %s deleted\n", trozos[1]);
+            return 0;
+        }
+    }
 }
 
-struct strfiledata * getInfo(char *path){
+struct strfiledata * getInfo(char *path){ //This function is a helper that gets all the stat info of a file and puts it in a struct "strfiledata"
   struct strfiledata * strfinfo = NULL; //Struct that will contain the file info formatted as "strings"
   struct stat finfo; //Data buffer for fstat
   //MALLOC
