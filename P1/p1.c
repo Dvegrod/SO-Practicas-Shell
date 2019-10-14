@@ -390,9 +390,9 @@ int info(char * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 
-int reclisting(char * trozos[],int ntrozos,unsigned int options/*,int reclevel*/) {
-  /*char space[reclevel + 1];
-    for (int i = 0; i < reclevel+1;i++) space[i] = ' ';*/
+int reclisting(char * trozos[],int ntrozos,unsigned int options,int reclevel) {
+  char space[reclevel + 1];
+    for (int i = 0; i < reclevel+1;i++) space[i] = '\t';
   for (int i = 0; i < ntrozos; i++) {
     //
     struct strfiledata *  data = getInfo(trozos[i]);
@@ -400,17 +400,18 @@ int reclisting(char * trozos[],int ntrozos,unsigned int options/*,int reclevel*/
     if (options & 0x4 && (data->name[0] == '.')) break; //-v
     //
     if (options & 0x1) { //-l
-      printf("%8s %s %2s %8s %8s %8s %s %8s",data->inodenum,data->permissions,data->hlinksnum,data->user,data->group,
+      printf("%s %8s %s %2s %8s %8s %8s %s %8s",space,data->inodenum,data->permissions,data->hlinksnum,data->user,data->group,
              data->size,data->date,data->name);
       if (data->linksto[0] != '\0') printf(" -> %s",data->linksto);
       printf("\n");
     }
     else {
-      printf("%12s %s\n",data->name,data->size);
+      printf("%s %12s %s\n",space,data->name,data->size);
     }
     if ((options & 0x2) && data->permissions[0] == 'd') { //-r
       DIR * dirpointer = opendir(trozos[i]);
-      //reclevel++;
+      free(data);
+      reclevel++;
       if (dirpointer == NULL) {
         printf("%s",strerror(errno)); printf("\n");
         break;
@@ -421,7 +422,7 @@ int reclisting(char * trozos[],int ntrozos,unsigned int options/*,int reclevel*/
         else {
           char * filename = (char *) malloc(1000*sizeof(char));
           sprintf(filename,"%s/%s",trozos[i],contents->d_name);
-          reclisting(&filename,1,options);
+          reclisting(&filename,1,options,reclevel);
           free(filename);
         }
         errno = 0;
@@ -429,7 +430,11 @@ int reclisting(char * trozos[],int ntrozos,unsigned int options/*,int reclevel*/
         if (errno != 0) return -1;
       }
     }
-    free(data);
+    else
+    {
+        free(data);
+    }
+    
   }
   return 0;
 };
@@ -442,7 +447,7 @@ int listar(char * trozos[], int ntrozos, struct extra_info *ex_inf) {
     if (!strcmp(trozos[i],"-r")) {options = options | 0x2; argstart++;}
     if (!strcmp(trozos[i],"-v")) {options = options | 0x4; argstart++;}
   }
-  return reclisting(&trozos[argstart],ntrozos - argstart,options);
+  return reclisting(&trozos[argstart],ntrozos - argstart,options,0);
 };
 
 int salir(char *trozos[], int ntrozos, struct extra_info *ex_inf){
