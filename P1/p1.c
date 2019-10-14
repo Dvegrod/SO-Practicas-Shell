@@ -4,6 +4,7 @@
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <pwd.h>
@@ -345,7 +346,7 @@ struct strfiledata * getInfo(char *path){ //This function is a helper that gets 
   //MALLOC
   strfinfo = (struct strfiledata *) malloc(sizeof(struct strfiledata));
   if (lstat(path,&finfo) < 0) {
-    printf("%s\n",strerror(errno)); //Syscall
+    printf("%s\n %s <-",strerror(errno),path); //Syscall
     return NULL;
   }
   //INODE NUMBER
@@ -362,7 +363,7 @@ struct strfiledata * getInfo(char *path){ //This function is a helper that gets 
   sprintf(strfinfo->size,"%lu",finfo.st_size);
   //DATE FORMAT
   struct tm * mtime = localtime(&finfo.st_mtime);
-  strftime(strfinfo->date,20,"%b %d %T",mtime);
+  strftime(strfinfo->date,20,"%b %d %H:%M",mtime);
   //FILE NAME: cuts the rest of the path
   int j=0;
   for (int i = 0; path[i] != '\0'; i++) if (path[i] == '/') j = i+1;
@@ -370,6 +371,7 @@ struct strfiledata * getInfo(char *path){ //This function is a helper that gets 
   //LINKS TO
   if (readlink(path,strfinfo->linksto,200) == -1) {
     if (errno != 22) printf("%s",strerror(errno));
+    strfinfo->linksto[0] = '\0';
     };
   return strfinfo;
 }
@@ -387,9 +389,61 @@ int info(char * trozos[], int ntrozos, struct extra_info *ex_inf){
   return 0;
 }
 
-int listar(char * trozos[], int ntrozos, struct extra_info *ex_inf){
-    return 0;
-}
+
+int reclisting(char * trozos[],int ntrozos,unsigned int options/*,int reclevel*/) {
+  /*char space[reclevel + 1];
+    for (int i = 0; i < reclevel+1;i++) space[i] = ' ';*/
+  for (int i = 0; i < ntrozos; i++) {
+    //
+    struct strfiledata *  data = getInfo(trozos[i]);
+    if (data == NULL) return -1;
+    if (options & 0x4 && (data->name[0] == '.')) break; //-v
+    //
+    if (options & 0x1) { //-l
+      printf("%8s %s %2s %8s %8s %8s %s %8s",data->inodenum,data->permissions,data->hlinksnum,data->user,data->group,
+             data->size,data->date,data->name);
+      if (data->linksto[0] != '\0') printf(" -> %s",data->linksto);
+      printf("\n");
+    }
+    else {
+      printf("%12s %s\n",data->name,data->size);
+    }
+    if ((options & 0x2) && data->permissions[0] == 'd') { //-r
+      DIR * dirpointer = opendir(trozos[i]);
+      //reclevel++;
+      if (dirpointer == NULL) {
+        printf("%s",strerror(errno)); printf("\n");
+        break;
+      };
+      struct dirent * contents = readdir(dirpointer);
+      while (contents != NULL) {
+        if (!strcmp(contents->d_name,".") || !strcmp(contents->d_name,"..")) {}
+        else {
+          char * filename = (char *) malloc(1000*sizeof(char));
+          sprintf(filename,"%s/%s",trozos[i],contents->d_name);
+          reclisting(&filename,1,options);
+          free(filename);
+        }
+        errno = 0;
+        contents = readdir(dirpointer);
+        if (errno != 0) return -1;
+      }
+    }
+    free(data);
+  }
+  return 0;
+};
+
+int listar(char * trozos[], int ntrozos, struct extra_info *ex_inf) {
+  unsigned int options = 0x0;
+  int argstart = 1;
+  for (int i = 1; i < ntrozos && i < 4; i++) {
+    if (!strcmp(trozos[i],"-l")) {options = options | 0x1; argstart++;}
+    if (!strcmp(trozos[i],"-r")) {options = options | 0x2; argstart++;}
+    if (!strcmp(trozos[i],"-v")) {options = options | 0x4; argstart++;}
+  }
+  return reclisting(&trozos[argstart],ntrozos - argstart,options);
+};
 
 int salir(char *trozos[], int ntrozos, struct extra_info *ex_inf){
     return 1;
