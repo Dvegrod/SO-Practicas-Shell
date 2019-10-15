@@ -12,6 +12,9 @@
 #include <errno.h>
 #define MAXLEN 256 //maximum length of strings (arrays of 256 chars)
 #define MAX_N_ARG 32 //maximum number of arguments to a shell command
+#define LIST_LONG 1
+#define LIST_RECR 2
+#define LIST_NVRB 4
 //Estructuras:
 struct node {
   char com[MAXLEN];
@@ -274,7 +277,7 @@ int crear(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     int fd;
     if (!strcmp(trozos[1],"-d")){ //creates a directory
         if (trozos[2] == NULL){
-            printf("LISTAR DIRECTORIO\n"); //list directory. we need to implement LISTAR first
+            reclisting(".", LIST_NVRB);
             return 0;
         }
         else{
