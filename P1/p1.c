@@ -348,6 +348,7 @@ int recdelete(char * path) {
                 errno = 0;
                 contents = readdir(dirpointer);
                 if (errno != 0) return -1;
+                remove(path);
             }
     }
     else{
