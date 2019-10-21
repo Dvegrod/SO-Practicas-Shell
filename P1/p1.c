@@ -457,15 +457,16 @@ int reclisting(char * path,unsigned int options,int reclevel) {
     printf("%s %8s %s %2s %8s %8s %8s %s %8s",space,data->inodenum,data->permissions,data->hlinksnum,data->user,data->group,
              data->size,data->date,data->name);
     if (data->linksto[0] != '\0') printf(" -> %s",data->linksto);
-    printf("\n");
     }
   else {
-    printf("%s %12s %s\n",space,data->name,data->size);
+    printf("%s %12s %s",space,data->name,data->size);
   }
-  if ((options & 0x2) && data->permissions[0] == 'd') { //-r
+  if (!(0x8 & options) && data->permissions[0] == 'd') {
+    //0x8 retiene el listado recursivo a un solo nivel ya que se activa cuando se lista un directorio sin -r
+    printf(" :\n");
     DIR * dirpointer = opendir(path);
+    reclevel += 3; //Desplazamiento en la salida por pantalla de los ficheros hijo
     free(data);
-    reclevel++;
     if (dirpointer == NULL) {
       printf("%s",strerror(errno)); printf("\n");
       return 0;
@@ -474,8 +475,9 @@ int reclisting(char * path,unsigned int options,int reclevel) {
     while (contents != NULL) {
       char filename[1024];
       sprintf(filename,"%s/%s",path,contents->d_name);
-      if (!strcmp(contents->d_name,".") || !strcmp(contents->d_name,"..")) {
-        reclisting(filename,options ^ 0x2,reclevel);
+      if (!(0x2 & options) || !strcmp(contents->d_name,".") || !strcmp(contents->d_name,"..")) {
+        //Estas llamadas tienen la recursividad desactivada por 0x8
+        reclisting(filename,options | 0x8,reclevel);
       }
       else {
         reclisting(filename,options,reclevel);
@@ -490,6 +492,7 @@ int reclisting(char * path,unsigned int options,int reclevel) {
     {
       free(data);
     }
+  printf("\n");
   return 0;
 }
 
@@ -502,11 +505,7 @@ int listar(char * trozos[], int ntrozos, struct extra_info *ex_inf) {
     if (!strcmp(trozos[i],"-v")) {options = options | 0x4; argstart++;}
   }
   int ret = 0;
-  for (int i = argstart;i < ntrozos; i++) {
-
-    if (isdir) options |= 0x8;
-    ret |= reclisting(trozos[i],options,0);
-  }
+  for (int i = argstart;i < ntrozos; i++) ret |= reclisting(trozos[i],options,0);
   return ret;
 }
 
