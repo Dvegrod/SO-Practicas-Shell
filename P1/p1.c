@@ -324,9 +324,40 @@ int crear(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     }
 }
 
+int recdelete(char * path) {
+    struct stat * statbuf = NULL;
+    if (!lstat(path,statbuf)){
+        char isdir = TipoFichero(statbuf->st_mode);
+            if (isdir != 'd') {
+                remove(path);
+            }
+            else {
+                DIR * dirpointer = opendir(path);
+                if (dirpointer == NULL) {
+                    printf("%s\n",strerror(errno));
+                    return 0;
+                };
+                struct dirent * contents = readdir(dirpointer);
+                while (contents != NULL) {
+                    if ((!strcmp(contents->d_name,".")) || (!strcmp(contents->d_name,".."))) {
+                    }
+                    else{                    
+                    recdelete(strcat(path,contents->d_name));
+                    }
+                }
+                errno = 0;
+                contents = readdir(dirpointer);
+                if (errno != 0) return -1;
+            }
+    }
+    else{
+        printf(" This specified name does not exist\n");
+    }
+}
+
 int borrar(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     if (!strcmp(trozos[1], "-r")){ //if the -r flag is specified
-        printf(" -r flag :D\n"); //recursive directory deleting. we need to implement LISTAR first
+        recdelete(trozos[2]); //recursive directory deleting
         return 0;
     }
     else if ((trozos[1][0] == '-') && (trozos[1][1] != 'r')){ //not valid flag
