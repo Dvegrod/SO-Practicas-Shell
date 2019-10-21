@@ -327,8 +327,6 @@ int crear(char * trozos[], int ntrozos, struct extra_info *ex_inf){
 int recdelete(char * path) {
     struct stat statbuf;
     int intstat = lstat(path, &statbuf);
-    printf("path : %s\n", path);
-    printf("int stat: %d\n", intstat);
     if (!intstat){
         char isdir = TipoFichero(statbuf.st_mode);
             if (isdir != 'd') {
@@ -343,7 +341,6 @@ int recdelete(char * path) {
                 struct dirent * contents = readdir(dirpointer);
                 while (contents != NULL) {
                     if ((!strcmp(contents->d_name,".")) || (!strcmp(contents->d_name,".."))) {
-                       printf("ola\n");
                     }
                     else{
 		    char newpath[4096];
@@ -365,7 +362,7 @@ int recdelete(char * path) {
 
 int borrar(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     if (!strcmp(trozos[1], "-r")){ //if the -r flag is specified
-	recdelete(trozos[2]); //recursive directory deleting
+	      recdelete(trozos[2]); //recursive directory deleting
         return 0;
     }
     else if ((trozos[1][0] == '-') && (trozos[1][1] != 'r')){ //not valid flag
@@ -505,7 +502,11 @@ int listar(char * trozos[], int ntrozos, struct extra_info *ex_inf) {
     if (!strcmp(trozos[i],"-v")) {options = options | 0x4; argstart++;}
   }
   int ret = 0;
-  for (int i = argstart;i < ntrozos; i++) ret |= reclisting(trozos[i],options,0);
+  for (int i = argstart;i < ntrozos; i++) {
+
+    if (isdir) options |= 0x8;
+    ret |= reclisting(trozos[i],options,0);
+  }
   return ret;
 }
 
