@@ -1,4 +1,6 @@
 
+#ifndef DLIST
+#define DLIST
 
 #include <stdlib.h>
 //Constantes
@@ -20,3 +22,4 @@ int RemoveElement(struct node **plist, int position);
 
 void disposeAll(struct node ** ptolist);
 
+#endif

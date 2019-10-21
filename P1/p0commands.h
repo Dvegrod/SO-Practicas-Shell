@@ -1,5 +1,9 @@
 
+#ifndef CP0
+#define CP0
 #include "./dynamiclist.h"
+#include "./exinfo.h"
+
 //Interfaz
 
 int autores(char * trozos[], int ntrozos, struct extra_info *ex_inf);
@@ -14,3 +18,4 @@ int hora(char * trozos[], int ntrozos, struct extra_info *ex_inf);
 
 int hist(char * trozos[], int ntrozos, struct extra_info *ex_inf);
 
+#endif

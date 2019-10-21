@@ -10,7 +10,7 @@
 #include <grp.h>
 #include <errno.h>
 #include <string.h>
-
+#include "./exinfo.h"
 #define LIST_LONG 1
 #define LIST_RECR 2
 #define LIST_NVRB 4
