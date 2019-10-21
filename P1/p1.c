@@ -273,11 +273,13 @@ int hist(char * trozos[], int ntrozos, struct extra_info *ex_inf){
   return 0;
 }
 
+int reclisting(char * path,unsigned int options,int reclevel);
+
 int crear(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     int fd;
     if (!strcmp(trozos[1],"-d")){ //creates a directory
         if (trozos[2] == NULL){
-            reclisting(".", LIST_NVRB);
+            reclisting(".", LIST_NVRB,0);
             return 0;
         }
         else{
@@ -286,7 +288,7 @@ int crear(char * trozos[], int ntrozos, struct extra_info *ex_inf){
                 return 0;
             }
             else{
-                if (errno = EEXIST){
+                if (errno == EEXIST){
                     printf(" Error: File or directory %s already exists\n", trozos[2]); //file already exists
                     return -1;
                 }
@@ -305,7 +307,7 @@ int crear(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     {
         fd = open(trozos[1], O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); //system call to create the file
         if (fd == -1){
-            if (errno = EEXIST){ //file exists
+            if (errno == EEXIST){ //file exists
                 printf(" Error: File %s already exists\n",trozos[1]);
                 return -1;
             }
