@@ -44,7 +44,7 @@ char * ConvierteModo2 (mode_t m){
 // Funciones para las tareas de cada comando de la shell
 
 
-int reclisting(char * path,unsigned int options,int reclevel);
+int reclisting(char const * path,unsigned int options,int reclevel);
 
 int crear(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     int fd;
@@ -95,7 +95,7 @@ int crear(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     }
 }
 
-int recdelete(char * path) {
+int recdelete(char const * path) {
     struct stat statbuf;
     int intstat = lstat(path, &statbuf);
     if (!intstat){
@@ -154,7 +154,7 @@ int borrar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
 
 
 
-struct strfiledata * getInfo(char *path){ //This function is a helper that gets all the stat info of a file and puts it in a struct "strfiledata"
+struct strfiledata * getInfo(char const *path){ //This function is a helper that gets all the stat info of a file and puts it in a struct "strfiledata"
   struct strfiledata * strfinfo = NULL; //Struct that will contain the file info formatted as "strings"
   struct stat finfo; //Data buffer for fstat
   //MALLOC
@@ -216,7 +216,7 @@ int info(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 
-int reclisting(char * path,unsigned int options,int reclevel) {
+int reclisting(char const* path,unsigned int options,int reclevel) {
   char space[reclevel + 1];
   for (int i = 0; i < reclevel;i++) space[i] ='-';
   space[reclevel] = '\0';
