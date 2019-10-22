@@ -2,7 +2,7 @@
 #include "./p0commands.h"
 
 int autores(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-    char *opcion = trozos[1];
+    char const *opcion = trozos[1];
     if (opcion == NULL){ //If there is no option
         printf("Carlos Torres Paz : carlos.torres\n");
         printf("Daniel Sergio Vega Rodríguez : d.s.vega\n");
@@ -28,7 +28,7 @@ int autores(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int pid(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-    char *opcion = trozos[1];
+    char const *opcion = trozos[1];
     if (opcion==NULL)
     {
         printf("PID of Shell: %i\n", getpid());
@@ -48,7 +48,7 @@ int pid(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int cdir(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-    char *opcion = trozos[1];
+    char const *opcion = trozos[1];
     char buf[MAXLEN];
     if (opcion == NULL){
         printf("%s\n",getcwd(buf,MAXLEN));
@@ -80,7 +80,7 @@ int hora(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int hist(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-  char *opcion = trozos[1];
+  char const *opcion = trozos[1];
   if (opcion != NULL) { //if there IS an option
     if (!strcmp(opcion,"-c")){ //if that option is "-c"
         disposeAll(&(ex_inf->lista));
