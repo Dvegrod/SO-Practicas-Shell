@@ -20,23 +20,6 @@ char TipoFichero (mode_t m){
     }
 }
 
-char * ConvierteModo (mode_t m, char *permisos){
-    strcpy (permisos,"---------- ");
-    permisos[0]=TipoFichero(m);
-    if (m&S_IRUSR) permisos[1]='r'; /*propietario*/
-    if (m&S_IWUSR) permisos[2]='w';
-    if (m&S_IXUSR) permisos[3]='x';
-    if (m&S_IRGRP) permisos[4]='r'; /*grupo*/
-    if (m&S_IWGRP) permisos[5]='w';
-    if (m&S_IXGRP) permisos[6]='x';
-    if (m&S_IROTH) permisos[7]='r'; /*resto*/
-    if (m&S_IWOTH) permisos[8]='w';
-    if (m&S_IXOTH) permisos[9]='x';
-    if (m&S_ISUID) permisos[3]='s'; /*setuid, setgid y stickybit*/
-    if (m&S_ISGID) permisos[6]='s';
-    if (m&S_ISVTX) permisos[9]='t';
-    return permisos;
-}
 
 char * ConvierteModo2 (mode_t m){
     static char permisos[12];
@@ -57,25 +40,6 @@ char * ConvierteModo2 (mode_t m){
     return (permisos);
 }
 
-char * ConvierteModo3 (mode_t m){
-    char * permisos;
-    permisos=(char *) malloc (12);
-    strcpy (permisos,"---------- ");
-    permisos[0]=TipoFichero(m);
-    if (m&S_IRUSR) permisos[1]='r'; /*propietario*/
-    if (m&S_IWUSR) permisos[2]='w';
-    if (m&S_IXUSR) permisos[3]='x';
-    if (m&S_IRGRP) permisos[4]='r'; /*grupo*/
-    if (m&S_IWGRP) permisos[5]='w';
-    if (m&S_IXGRP) permisos[6]='x';
-    if (m&S_IROTH) permisos[7]='r'; /*resto*/
-    if (m&S_IWOTH) permisos[8]='w';
-    if (m&S_IXOTH) permisos[9]='x';
-    if (m&S_ISUID) permisos[3]='s'; /*setuid, setgid y stickybit*/
-    if (m&S_ISGID) permisos[6]='s';
-    if (m&S_ISVTX) permisos[9]='t';
-    return (permisos);
-}
 
 // Funciones para las tareas de cada comando de la shell
 
@@ -173,7 +137,7 @@ int borrar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
         return 0;
     }
     else if ((trozos[1][0] == '-') && (trozos[1][1] != 'r')){ //not valid flag
-        printf(" %s: unrecognised command option", trozos[1]);
+        printf(" %s: unrecognised command option\n", trozos[1]);
         return -1;
     }
     else{ //no flag is specified
