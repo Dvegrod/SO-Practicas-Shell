@@ -19,7 +19,7 @@ int readInput(char comando[], struct extra_info * ex_inf){
     return 0;
 }
 
-int TrocearCadena(char * cadena, char * trozos[]){
+int TrocearCadena(char * cadena, char const * trozos[]){
     int i=1;
     if ((trozos[0]=strtok(cadena," \n\t"))==NULL)
         return 0;
@@ -35,7 +35,7 @@ int salir(char const *trozos[], int ntrozos, struct extra_info *ex_inf){
 //Función para decidir qué comando se va a ejecutar
 
 int processInput(char comando[], struct extra_info *ex_inf){
-    char *trozos[MAX_N_ARG];
+    char const *trozos[MAX_N_ARG];
     int ntrozos = TrocearCadena(comando,trozos);
     int i = 0;
     int return_value = 0;
