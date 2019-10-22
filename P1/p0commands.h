@@ -3,16 +3,16 @@
 #include "./exinf.h"
 #include "./dynlist.h"
 
-int autores(char * trozos[], int ntrozos, struct extra_info *ex_inf);
+int autores(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
 
-int pid(char * trozos[], int ntrozos, struct extra_info *ex_inf);
+int pid(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
 
-int cdir(char * trozos[], int ntrozos, struct extra_info *ex_inf);
+int cdir(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
 
-int fecha(char * trozos[], int ntrozos, struct extra_info *ex_inf);
+int fecha(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
 
-int hora(char * trozos[], int ntrozos, struct extra_info *ex_inf);
+int hora(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
 
-int hist(char * trozos[], int ntrozos, struct extra_info *ex_inf);
+int hist(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
 
 #endif

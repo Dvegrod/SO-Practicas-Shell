@@ -1,7 +1,7 @@
 
 #include "./p0commands.h"
 
-int autores(char * trozos[], int ntrozos, struct extra_info *ex_inf){
+int autores(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     char *opcion = trozos[1];
     if (opcion == NULL){ //If there is no option
         printf("Carlos Torres Paz : carlos.torres\n");
@@ -27,7 +27,7 @@ int autores(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-int pid(char * trozos[], int ntrozos, struct extra_info *ex_inf){
+int pid(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     char *opcion = trozos[1];
     if (opcion==NULL)
     {
@@ -47,7 +47,7 @@ int pid(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-int cdir(char * trozos[], int ntrozos, struct extra_info *ex_inf){
+int cdir(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     char *opcion = trozos[1];
     char buf[MAXLEN];
     if (opcion == NULL){
@@ -63,7 +63,7 @@ int cdir(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-int fecha(char * trozos[], int ntrozos, struct extra_info *ex_inf){
+int fecha(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     time_t now; //time type variable
     time(&now); //writes current time to NOW variable
     struct tm *local = localtime(&now); //a structure to separate minutes, hours, day, month, year
@@ -71,7 +71,7 @@ int fecha(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-int hora(char * trozos[], int ntrozos, struct extra_info *ex_inf){
+int hora(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     time_t now; //time type variable
     time(&now); //writes current time to NOW variable
     struct tm *local = localtime(&now); //a structure to separate minutes, hours, day, month, year
@@ -79,7 +79,7 @@ int hora(char * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-int hist(char * trozos[], int ntrozos, struct extra_info *ex_inf){
+int hist(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
   char *opcion = trozos[1];
   if (opcion != NULL) { //if there IS an option
     if (!strcmp(opcion,"-c")){ //if that option is "-c"

@@ -28,7 +28,7 @@ int TrocearCadena(char * cadena, char * trozos[]){
     return i;
 }
 
-int salir(char *trozos[], int ntrozos, struct extra_info *ex_inf){
+int salir(char const *trozos[], int ntrozos, struct extra_info *ex_inf){
   return 1;
 }
 
@@ -42,7 +42,7 @@ int processInput(char comando[], struct extra_info *ex_inf){
 
     struct {
         char * cmd_name;
-        int (* cmd_fun) (char * trozos[], int ntrozos, struct extra_info *ex_inf);
+        int (* cmd_fun) (char const * trozos[], int ntrozos, struct extra_info *ex_inf);
     } cmds[] = {
         {"autores", autores},
         {"pid", pid},

@@ -82,7 +82,7 @@ char * ConvierteModo3 (mode_t m){
 
 int reclisting(char * path,unsigned int options,int reclevel);
 
-int crear(char * trozos[], int ntrozos, struct extra_info *ex_inf){
+int crear(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     int fd;
     if (!strcmp(trozos[1],"-d")){ //creates a directory
         if (trozos[2] == NULL){
@@ -167,7 +167,7 @@ int recdelete(char * path) {
     return 0;
 }
 
-int borrar(char * trozos[], int ntrozos, struct extra_info *ex_inf){
+int borrar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     if (!strcmp(trozos[1], "-r")){ //if the -r flag is specified
 	      recdelete(trozos[2]); //recursive directory deleting
         return 0;
@@ -238,7 +238,7 @@ struct strfiledata * getInfo(char *path){ //This function is a helper that gets 
   return strfinfo;
 }
 
-int info(char * trozos[], int ntrozos, struct extra_info *ex_inf){
+int info(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
   for (int i = 1; i < ntrozos; i++) {
     struct strfiledata *  data = getInfo(trozos[i]);
     if (data == NULL) return -1;
@@ -303,7 +303,7 @@ int reclisting(char * path,unsigned int options,int reclevel) {
   return 0;
 }
 
-int listar(char * trozos[], int ntrozos, struct extra_info *ex_inf) {
+int listar(char const * trozos[], int ntrozos, struct extra_info *ex_inf) {
   unsigned int options = 0x0;
   int argstart = 1;
   for (int i = 1; i < ntrozos && i < 4; i++) {
