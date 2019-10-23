@@ -218,12 +218,15 @@ int info(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
 
 int reclisting(char const* path,unsigned int options,int reclevel) {
   char space[reclevel + 1];
-  for (int i = 0; i < reclevel;i++) space[i] ='-';
-  space[reclevel] = '\0';
+  char indentchar = '-';
   struct strfiledata *  data = getInfo(path);
   if (data == NULL) return -1;
   if (options & 0x4 && (data->name[0] == '.')) return 0; //-v
-    //
+  //
+  if (!(options & 0x8) && data->permissions[0] == 'd') indentchar = '*';
+  for (int i = 0; i < reclevel;i++) space[i] = indentchar;
+  space[reclevel] = '\0';
+  //
   if (options & 0x1) { //-l
     printf("%s %8s %s %2s %8s %8s %8s %s %8s",space,data->inodenum,data->permissions,data->hlinksnum,data->user,data->group,
              data->size,data->date,data->name);
@@ -276,7 +279,12 @@ int listar(char const * trozos[], int ntrozos, struct extra_info *ex_inf) {
     if (!strcmp(trozos[i],"-v")) {options = options | 0x4; argstart++;}
   }
   int ret = 0;
-  for (int i = argstart;i < ntrozos; i++) ret |= reclisting(trozos[i],options,0);
+  if (argstart == ntrozos) {
+    char current[256];
+    ret = reclisting(getcwd(current,256),options,0);
+  }
+  else
+    for (int i = argstart;i < ntrozos; i++) ret |= reclisting(trozos[i],options,0);
   return ret;
 }
 
