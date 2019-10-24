@@ -6,20 +6,20 @@ all: shell info listar
 shell: shell.c dynlist.o p0commands.o p1commands.o exinf.h
 	$(CC) -o shell shell.c dynlist.o p0commands.o p1commands.o $(CFLAGS)
 
-info: info.c p1commands.o
+info: info.c p1commands.o exinf.h
 	$(CC) -o info info.c p1commands.o $(CFLAGS)
 
-listar: listar.c p1commands.o
+listar: listar.c p1commands.o exinf.h
 	$(CC) -o listar listar.c p1commands.o $(CFLAGS)
 
-dynlist.o: dynlist.h dynlist.c
-	$(CC) -c dynlist.h dynlist.c $(CFLAGS)
+dynlist.o: dynlist.c dynlist.h exinf.h
+	$(CC) -c dynlist.c $(CFLAGS)
 
-p0commands.o: p0commands.h p0commands.c
-	$(CC) -c p0commands.h p0commands.c $(CFLAGS)
+p0commands.o: p0commands.c p0commands.h exinf.h
+	$(CC) -c p0commands.c $(CFLAGS)
 
-p1commands.o: p1commands.h p1commands.h
-	$(CC) -c p1commands.h p1commands.c $(CFLAGS)
+p1commands.o: p1commands.c p1commands.h exinf.h
+	$(CC) -c p1commands.c $(CFLAGS)
 
 clean:
 	rm *.h.gch
