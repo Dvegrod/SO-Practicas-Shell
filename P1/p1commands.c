@@ -46,53 +46,71 @@ char * ConvierteModo2 (mode_t m){
 
 int reclisting(char const * path,unsigned int options,int reclevel);
 
-int crear(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-    int fd;
-    if (!strcmp(trozos[1],"-d")){ //creates a directory
-        if (trozos[2] == NULL){
-            reclisting(".", LIST_NVRB,0);
-            return 0;
-        }
-        else{
-            if (!mkdir(trozos[2], S_IRWXU | S_IRWXG)){ //creates directory
-                printf(" Directory %s has been created\n", trozos[2]);
-                return 0;
-            }
-            else{
-                if (errno == EEXIST){
-                    printf(" Error: File or directory %s already exists\n", trozos[2]); //file already exists
-                    return -1;
-                }
-                else{
-                    printf(" Error: Directory %s could not be created\n", trozos[2]); //other errors
-                    return -1;
-                }
-            }//else
-        }//else
-    }//if 
-    else if ((trozos[1][0] == '-') && (trozos[1][0] != 'd')){ //non valid option
-        printf(" %s : unrecognised command option\n", trozos[1]);
-        return -1;
-    } //else if
-    else    //tries to create a file
-    {
-        fd = open(trozos[1], O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); //system call to create the file
-        if (fd == -1){
-            if (errno == EEXIST){ //file exists
-                printf(" Error: File %s already exists\n",trozos[1]);
-                return -1;
-            }
-            else{ //other errors
-                printf(" Error: file %s could not be created\n", trozos[1]);
-                return -1;
-            }
-        }
-        else{
-            printf(" File %s created\n", trozos[1]); //file created successfully
-            close(fd); //closes the file after being created
-            return 0;
-        }
+int createdir(char const * trozos[], int ntrozos){
+  if (trozos[2] == NULL){
+    reclisting(".", 0,0);
+    return 0;
+  }
+
+  else { //trozos[2]!=NULL. Will create a new directory
+    if (!mkdir(trozos[2], S_IRWXU | S_IRWXG)){ //creates directory
+        printf(" Directory %s has been created\n", trozos[2]);
+        return 0;
     }
+
+    else{
+        if (errno == EEXIST){
+            printf(" Error: File or directory %s already exists\n", trozos[2]); //file already exists
+            return -1;
+        }
+        else{
+            printf(" Error: Directory %s could not be created\n", trozos[2]); //other errors
+            return -1;
+        }
+    }//else creates a directory
+  }//else lists "."
+}
+
+int createfile(char const *trozos[], int ntrozos){
+  int fd = open(trozos[1], O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); //system call to create the file
+  if (fd == -1){
+      if (errno == EEXIST){ //file exists
+          printf(" Error: File %s already exists\n",trozos[1]);
+          return -1;
+      }
+      else{ //other errors
+          perror(strerror(errno));
+          return -1;
+      }
+  }//end if open fails
+
+  else{ //open returns on success
+      printf(" File %s created\n", trozos[1]); //file created successfully
+      close(fd); //closes the file after being created
+      return 0;
+  }
+
+}
+
+int crear(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+  if (trozos[1]==NULL){ //if no file name is given
+    reclisting(".", 0,0);
+    return 0;
+  }
+    
+  if (!strcmp(trozos[1],"-d")){ //creates a directory
+    return createdir(trozos,ntrozos);
+  }
+  
+  else if ((trozos[1][0] == '-') && (trozos[1][0] != 'd')){ //not valid option
+      printf(" %s : unrecognised command option\n", trozos[1]);
+      return -1;
+  } //else if
+
+  else //tries to create a file
+  {
+    return createfile(trozos,ntrozos);
+  }
 }
 
 int recdelete(char const * path) {
