@@ -3,6 +3,14 @@
 #define LIST_RECR 2
 #define LIST_NVRB 4
 
+/*
+  Sistemas Operativos
+  Práctica 1
+  Carlos Torres (carlos.torres)
+  Daniel Sergio Vega (d.s.vega)
+  Grupo 4.3
+*/
+
 struct strfiledata {
   char inodenum[1000],permissions[12],hlinksnum[10],user[200],group[200],size[10],date[20],name[200],linksto[200];
 };

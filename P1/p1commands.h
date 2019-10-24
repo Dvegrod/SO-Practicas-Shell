@@ -1,3 +1,11 @@
+/*
+  Sistemas Operativos
+  Práctica 1
+  Carlos Torres (carlos.torres)
+  Daniel Sergio Vega (d.s.vega)
+  Grupo 4.3
+*/
+
 #ifndef __P1_C
     #define __P1_C
 

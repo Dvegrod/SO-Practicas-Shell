@@ -1,3 +1,11 @@
+/*
+  Sistemas Operativos
+  Práctica 1
+  Carlos Torres (carlos.torres)
+  Daniel Sergio Vega (d.s.vega)
+  Grupo 4.3
+*/
+
 #ifndef __DYN_LIST
   #define __DYN_LIST
   #include "exinf.h"

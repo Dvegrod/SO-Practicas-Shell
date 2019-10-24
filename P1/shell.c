@@ -5,6 +5,14 @@
 #define MAX_N_ARG 32 //maximum number of arguments to a shell command
 #define SHELL_EXIT_SIGNAL 2
 
+/*
+  Sistemas Operativos
+  Práctica 1
+  Carlos Torres (carlos.torres)
+  Daniel Sergio Vega (d.s.vega)
+  Grupo 4.3
+*/
+
 //Shell:
 
 //Funciones para leer los comandos de la Shell

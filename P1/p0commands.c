@@ -1,5 +1,13 @@
 #include "./p0commands.h"
 
+/*
+  Sistemas Operativos
+  Práctica 1
+  Carlos Torres (carlos.torres)
+  Daniel Sergio Vega (d.s.vega)
+  Grupo 4.3
+*/
+
 int autores(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     char const *opcion = trozos[1];
     if (opcion == NULL){ //If there is no option
