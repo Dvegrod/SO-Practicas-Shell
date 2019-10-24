@@ -3,6 +3,7 @@
 #include "p0commands.h"
 #include "p1commands.h"
 #define MAX_N_ARG 32 //maximum number of arguments to a shell command
+#define SHELL_EXIT_SIGNAL 2
 
 //Shell:
 
@@ -13,7 +14,10 @@ void printPrompt(){
 }
 
 int readInput(char comando[], struct extra_info * ex_inf){
-    fgets(comando,MAXLEN,stdin);
+    if (fgets(comando,MAXLEN,stdin)==NULL){
+        printf("stdin could not be read\n");
+        return SHELL_EXIT_SIGNAL; //returns an exit signal that tells main() to clean up and exit
+    }
     if (comando[0]!='\n')
         InsertElement(&(ex_inf->lista), comando);
     return 0;
@@ -29,7 +33,7 @@ int TrocearCadena(char * cadena, char const * trozos[]){
 }
 
 int salir(char const *trozos[], int ntrozos, struct extra_info *ex_inf){
-  return 1;
+  return SHELL_EXIT_SIGNAL;
 }
 
 //Función para decidir qué comando se va a ejecutar
@@ -89,9 +93,9 @@ int main(int argc, char const *argv[]){
     do{
         printPrompt();
         readInput(comando, ex_inf);
-    } while(processInput(comando, ex_inf) != 1);
+    } while(processInput(comando, ex_inf) != SHELL_EXIT_SIGNAL);
 
-    disposeAll(&ex_inf->lista);
+    disposeAll(&ex_inf->lista); //cleans up and exits
     free(ex_inf);
-    return 0;
+    return EXIT_SUCCESS;
 }

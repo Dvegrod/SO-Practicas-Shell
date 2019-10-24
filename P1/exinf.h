@@ -17,4 +17,5 @@
   struct extra_info {
     struct node * lista;
   };
+  
 #endif
