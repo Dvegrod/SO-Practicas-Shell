@@ -235,55 +235,60 @@ int info(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
 
 
 int reclisting(char const* path,unsigned int options,int reclevel) {
-  char space[reclevel + 1];
-  char indentchar = '-';
+  // EXTRACCION DE DATOS DEL FICHERO
   struct strfiledata *  data = getInfo(path);
   if (data == NULL) return -1;
-  if (options & 0x4 && (data->name[0] == '.')) return 0; //-v
-  //
+  if (options & 0x4 && (data->name[0] == '.')) return 0; // -v -> 0x4
+  // FORMATO PARA LISTADO RECURSIVO
+  char indent[reclevel + 1];
+  char indentchar = '-';
+     //Si es directorio se cambia el caracter de indentacion
   if (!(options & 0x8) && data->permissions[0] == 'd') indentchar = '*';
-  for (int i = 0; i < reclevel;i++) space[i] = indentchar;
-  space[reclevel] = '\0';
-  //
+  for (int i = 0; i < reclevel;i++) indent[i] = indentchar;
+  indent[reclevel] = '\0';
+  // IMPRESION DE DATOS DEL FICHERO
   if (options & 0x1) { //-l
-    printf("%s %8s %s %2s %8s %8s %8s %s %8s",space,data->inodenum,data->permissions,data->hlinksnum,data->user,data->group,
+    printf("%s %8s %s %2s %8s %8s %8s %s %8s",indent,data->inodenum,data->permissions,data->hlinksnum,data->user,data->group,
              data->size,data->date,data->name);
     if (data->linksto[0] != '\0') printf(" -> %s",data->linksto);
     }
   else {
-    printf("%s %12s %s",space,data->name,data->size);
+    printf("%s %12s %s",indent,data->name,data->size);
   }
+  // RECURSIVIDAD
   if (!(0x8 & options) && data->permissions[0] == 'd') {
-    //0x8 retiene el listado recursivo a un solo nivel ya que se activa cuando se lista un directorio sin -r
+      //0x8 retiene el listado recursivo a un solo nivel
+      //ya que se activa cuando se llama a reclisting de un directorio sin -r
+    free(data); //Liberar el espacio ocupado por la informacion del padre
     printf(" :\n");
-    DIR * dirpointer = opendir(path);
     reclevel += 3; //Desplazamiento en la salida por pantalla de los ficheros hijo
-    free(data);
+    //APERTURA DEL DIRECTORIO
+    DIR * dirpointer = opendir(path);
     if (dirpointer == NULL) {
       printf("%s",strerror(errno)); printf("\n");
       return 0;
     };
+    //LECTURA DEL DIRECTORIO
     struct dirent * contents = readdir(dirpointer);
     while (contents != NULL) {
-      char filename[1024];
+      char filename[516];
       sprintf(filename,"%s/%s",path,contents->d_name);
+      // VVV Si la entrada en el directorio es el mismo o su padre o la recursividad esta desactivada
       if (!(0x2 & options) || !strcmp(contents->d_name,".") || !strcmp(contents->d_name,"..")) {
-        //Estas llamadas tienen la recursividad desactivada por 0x8
         reclisting(filename,options | 0x8,reclevel);
+        //Estas llamadas tienen la recursividad desactivada por 0x8
       }
       else {
         reclisting(filename,options,reclevel);
       }
+      //AVANZAR EN LA TABLA
       errno = 0;
       contents = readdir(dirpointer);
       if (errno != 0) return -1;
     }
     closedir(dirpointer);
   }
-  else
-    {
-      free(data);
-    }
+  else free(data);
   printf("\n");
   return 0;
 }
