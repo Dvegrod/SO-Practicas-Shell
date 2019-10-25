@@ -1,3 +1,11 @@
+/*
+  Sistemas Operativos
+  Práctica 1
+  Carlos Torres (carlos.torres)
+  Daniel Sergio Vega (d.s.vega)
+  Grupo 4.3
+*/
+
 #ifndef __EX_INF
   #define __EX_INF
   #include <stdio.h>
@@ -17,4 +25,5 @@
   struct extra_info {
     struct node * lista;
   };
+  
 #endif
