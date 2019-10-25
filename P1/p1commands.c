@@ -216,7 +216,7 @@ struct strfiledata * getInfo(char const *path){ //This function is a helper that
   struct passwd * tempu = getpwuid(finfo.st_uid);
   //Error
   if (tempu == NULL) {
-    printf("Error: %s",strerror(errno));
+    printf("Error: %s\n",strerror(errno));
     return NULL;
   };
   sprintf(strfinfo->user,"%s",tempu->pw_name);
@@ -224,7 +224,7 @@ struct strfiledata * getInfo(char const *path){ //This function is a helper that
   struct group * tempg = getgrgid(finfo.st_gid);
   //Error
   if (tempu == NULL) {
-    printf("Error: %s",strerror(errno));
+    printf("Error: %s\n",strerror(errno));
     return NULL;
   };
   sprintf(strfinfo->group,"%s",tempg->gr_name);
@@ -239,7 +239,7 @@ struct strfiledata * getInfo(char const *path){ //This function is a helper that
   sprintf(strfinfo->name,"%s",&path[j]); //File name
   //LINKS TO
   if (readlink(path,strfinfo->linksto,200) == -1) {
-    if (errno != 22) printf("%s",strerror(errno));
+    if (errno != 22) printf("%s\n",strerror(errno));
     strfinfo->linksto[0] = '\0';
     };
   return strfinfo;
