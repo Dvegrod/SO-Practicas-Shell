@@ -29,7 +29,7 @@ int readInput(char comando[], struct extra_info * ex_inf){
     }
     if (comando[0]!='\n'){
         char * com = malloc(256*sizeof(char));
-        sprintf(com,"%s\b\0",comando);
+        sprintf(com,"%s\b ",comando);
         InsertElement(&(ex_inf->historial), com);
     }
     return 0;
