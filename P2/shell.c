@@ -2,6 +2,7 @@
 #include "dynlist.h"
 #include "p0commands.h"
 #include "p1commands.h"
+#include "p2commands.h"
 #define MAX_N_ARG 32 //maximum number of arguments to a shell command
 #define SHELL_EXIT_SIGNAL 2
 
@@ -26,8 +27,11 @@ int readInput(char comando[], struct extra_info * ex_inf){
         printf("stdin could not be read\n");
         return SHELL_EXIT_SIGNAL; //returns an exit signal that tells main() to clean up and exit
     }
-    if (comando[0]!='\n')
-        InsertElement(&(ex_inf->lista), comando);
+    if (comando[0]!='\n'){
+        char * com = malloc(256*sizeof(char));
+        sprintf(com,"%s\b\0",comando);
+        InsertElement(&(ex_inf->historial), com);
+    }
     return 0;
 }
 
@@ -66,6 +70,15 @@ int processInput(char comando[], struct extra_info *ex_inf){
         {"borrar", borrar},
         {"info", info},
         {"listar", listar},
+        {"asignar", asignar},
+        {"desasignar", desasignar},
+        {"borrarkey", borrarkey},
+        {"mem", cmd_mem},
+        {"volcar", volcar},
+        {"llenar", llenar},
+        {"recursiva", recursiva},
+        {"rfich", rfich},
+        {"wfich", wfich},
         {"fin", salir},
         {"end", salir},
         {"exit", salir},
@@ -96,14 +109,14 @@ int main(int argc, char const *argv[]){
     struct extra_info * ex_inf;
     ex_inf = (struct extra_info *) malloc(sizeof(struct extra_info));
 
-    ex_inf->lista = CreateList();
+    ex_inf->historial = CreateList();
 
     do{
         printPrompt();
         readInput(comando, ex_inf);
     } while(processInput(comando, ex_inf) != SHELL_EXIT_SIGNAL);
 
-    disposeAll(&ex_inf->lista); //cleans up and exits
+    disposeAll(&ex_inf->historial); //cleans up and exits
     free(ex_inf);
     return EXIT_SUCCESS;
 }

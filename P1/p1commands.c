@@ -2,6 +2,7 @@
 #define LIST_LONG 1
 #define LIST_RECR 2
 #define LIST_NVRB 4
+#define LIST_LIMITED_REC 8
 
 /*
   Sistemas Operativos
@@ -262,16 +263,19 @@ int reclisting(char const* path,unsigned int options,int reclevel) {
   // EXTRACCION DE DATOS DEL FICHERO
   struct strfiledata *  data = getInfo(path);
   if (data == NULL) return -1;
-  if (options & 0x4 && (data->name[0] == '.')) return 0; // -v -> 0x4
+  if (options & LIST_NVRB && (data->name[0] == '.')){
+    free(data);
+    return 0; // -v -> LIST_NVRB
+  }
   // FORMATO PARA LISTADO RECURSIVO
   char indent[reclevel + 1];
   char indentchar = '-';
      //Si es directorio se cambia el caracter de indentacion
-  if (!(options & 0x8) && data->permissions[0] == 'd') indentchar = '*';
+  if (!(options & LIST_LIMITED_REC) && data->permissions[0] == 'd') indentchar = '*';
   for (int i = 0; i < reclevel;i++) indent[i] = indentchar;
   indent[reclevel] = '\0';
   // IMPRESION DE DATOS DEL FICHERO
-  if (options & 0x1) { //-l
+  if (options & LIST_LONG) { //-l
     printf("%s %8s %s %2s %8s %8s %8s %s %8s",indent,data->inodenum,data->permissions,data->hlinksnum,data->user,data->group,
              data->size,data->date,data->name);
     if (data->linksto[0] != '\0') printf(" -> %s",data->linksto);
@@ -299,7 +303,7 @@ int reclisting(char const* path,unsigned int options,int reclevel) {
       sprintf(filename,"%s/%s",path,contents->d_name);
       // VVV Si la entrada en el directorio es el mismo o su padre o la recursividad esta desactivada
       if (!(0x2 & options) || !strcmp(contents->d_name,".") || !strcmp(contents->d_name,"..")) {
-        reclisting(filename,options | 0x8,reclevel);
+        reclisting(filename,options | LIST_LIMITED_REC,reclevel);
         //Estas llamadas tienen la recursividad desactivada por 0x8
       }
       else {
@@ -321,9 +325,9 @@ int listar(char const * trozos[], int ntrozos, struct extra_info *ex_inf) {
   unsigned int options = 0x0;
   int argstart = 1;
   for (int i = 1; i < ntrozos && i < 4; i++) {
-    if (!strcmp(trozos[i],"-l")) {options = options | 0x1; argstart++;}
-    if (!strcmp(trozos[i],"-r")) {options = options | 0x2; argstart++;}
-    if (!strcmp(trozos[i],"-v")) {options = options | 0x4; argstart++;}
+    if (!strcmp(trozos[i],"-l")) {options = options | LIST_LONG; argstart++;}
+    if (!strcmp(trozos[i],"-r")) {options = options | LIST_RECR; argstart++;}
+    if (!strcmp(trozos[i],"-v")) {options = options | LIST_NVRB; argstart++;}
   }
   int ret = 0;
   if (argstart == ntrozos) {

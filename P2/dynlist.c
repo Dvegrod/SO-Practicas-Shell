@@ -9,22 +9,23 @@
 */
 //Lista:
 
+struct node {
+  void * elem;
+  struct node *next;
+};
+
 struct node * CreateList(){
     return NULL;
 }
 
-void InsertElement(struct node ** last, char *element){
+void InsertElement(struct node ** last, void *element){
     int i;
     while (*last != NULL){ //'last' points to the last node
         last = &((*last)->next); //moves one node forward
     }
     *last = (struct node *) malloc(sizeof(struct node)); //allocates memory for the new node
     (*last)->next = NULL; //sets to null the new end of the list
-    for (i = 0; (element[i] != '\0') && (i < MAXLEN); i++)
-    {
-        (*last)->com[i] = element[i];
-    }
-    (*last)->com[i-1] = '\0'; //replaces the endline character with the end of string flag
+    (*last)->elem = element;
 }
 
 int RemoveElement(struct node **plist, int position){
@@ -37,6 +38,7 @@ int RemoveElement(struct node **plist, int position){
   }
   struct node *auxiliar = *pointertopointer;  //Auxiliar stores the memory address of the node to be removed
   *pointertopointer = (*pointertopointer)->next; //The pointer in the list that aims to the expiring node now aims to the node after it (sometimes NULL)
+  free(auxiliar->elem);
   free(auxiliar);
   return 0;
 }
@@ -50,4 +52,20 @@ void disposeAll(struct node ** ptolist) {
       *ptolist = aux->next;
       free(aux);
       }*/
+}
+
+iterator first(lista list) {
+  return &list;
+}
+
+iterator next(iterator it) {
+  return &(*it)->next;
+}
+
+iterator isLast(iterator it) {
+  return (*it) == NULL;
+}
+
+void * getElement(iterator p) {
+  return (*p)->elem;
 }

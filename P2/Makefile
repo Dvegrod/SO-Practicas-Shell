@@ -3,7 +3,7 @@ CFLAGS=-Wall
 
 all: shell info listar
 
-shell: shell.c dynlist.o p0commands.o p1commands.o exinf.h
+shell: shell.c dynlist.o p0commands.o p1commands.o p2commands.o pexinf.h
 	$(CC) -o shell shell.c dynlist.o p0commands.o p1commands.o $(CFLAGS)
 
 info: info.c p1commands.o exinf.h
@@ -20,6 +20,9 @@ p0commands.o: p0commands.c p0commands.h exinf.h
 
 p1commands.o: p1commands.c p1commands.h exinf.h
 	$(CC) -c p1commands.c $(CFLAGS)
+
+p2commands.o: p2commands.c p2commands.h exinf.h
+	$(CC) -c p2commands.c $(CFLAGS)
 
 clean:
 	rm *.h.gch

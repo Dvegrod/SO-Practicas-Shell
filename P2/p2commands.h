@@ -10,7 +10,7 @@
     
     int borrarkey(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
     
-    int mem(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int cmd_mem(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
     
     int volcar(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
     

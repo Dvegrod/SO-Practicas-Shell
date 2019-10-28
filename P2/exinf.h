@@ -21,9 +21,10 @@
   #include <grp.h>
   #include <errno.h>
   #define MAXLEN 1024 //maximum length of strings (arrays of 1024 chars)
-  
-  struct extra_info {
-    struct node * lista;
-  };
+
+struct extra_info{
+  struct node * historial;
+
+};
   
 #endif

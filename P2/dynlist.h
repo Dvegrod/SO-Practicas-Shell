@@ -10,19 +10,25 @@
   #define __DYN_LIST
   #include "exinf.h"
   
-  struct node {
-    char com[MAXLEN];
-    struct node *next;
-  };
-  
   //Interfaz
+
+  typedef struct node * lista;
+  typedef struct node ** iterator;
   
-  struct node * CreateList();
+  lista CreateList();
   
-  void InsertElement(struct node ** last, char *element);
+  void InsertElement(lista *last, void *element);
   
-  int RemoveElement(struct node **plist, int position);
+  int RemoveElement(lista *plist, int position);
   
-  void disposeAll(struct node ** ptolist);
+  void disposeAll(lista * ptolist);
+
+  iterator first(lista list);
+
+  iterator next(iterator p);
+
+  iterator isLast(iterator p);
+
+  void * getElement(iterator p);
 
 #endif

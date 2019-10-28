@@ -113,7 +113,7 @@ int hist(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
   char const *opcion = trozos[1];
   if (opcion != NULL) { //if there IS an option
     if (!strcmp(opcion,"-c")){ //if that option is "-c"
-        disposeAll(&(ex_inf->lista));
+        disposeAll(first(*(ex_inf)->historial));
         printf("Cleared command history\n");
     }
     else
@@ -123,10 +123,11 @@ int hist(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     }
   }
   else { //if there is NO option
-    struct node *pointer = (ex_inf->lista);
-    for (int i = 1; pointer != NULL; i++) {
-      printf("%d > %s\n",i,pointer->com);
-      pointer = pointer->next;
+    struct node * pointer = (ex_inf->historial);
+    int n = 1;
+    for (iterator i = first(pointer); !isLast(i); next(i)) {
+      printf("%d > %s\n",i,getElement(pointer));
+      n++;
     }
   }
   return 0;
