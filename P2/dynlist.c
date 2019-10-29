@@ -1,4 +1,4 @@
-#include "./dynlist.h"
+#include "dynlist.h"
 
 /*
   Sistemas Operativos
@@ -42,6 +42,18 @@ int RemoveElement(struct node **plist, int position){
   return 0;
 }
 
+int RemoveElementAt(struct node **plist, void * elem){
+  struct node **pointertopointer = plist;
+  for (iterator i = first(*pointertopointer);!isLast(i);i = next(i)) {
+    if (elem == getElement(i)) {
+      RemoveElement(i,0);
+      destroyIt(i);
+      return 0;
+    }
+  }
+  return 1;
+}
+
 void disposeAll(struct node ** ptolist) {
   while (RemoveElement(ptolist,0) == 0);
   /* struct node * aux; //Otra posibilidad
@@ -73,4 +85,8 @@ int isLast(iterator it) {
 
 void * getElement(iterator p) {
   return (*p)->elem;
+}
+
+void destroyIt(iterator p) {
+  free(p);
 }

@@ -20,7 +20,9 @@
   void InsertElement(lista *last, void *element);
   
   int RemoveElement(lista *plist, int position);
-  
+
+  int RemoveElementAt(lista *plist, void * elem);
+
   void disposeAll(lista * ptolist);
 
   iterator first(lista list);
@@ -31,4 +33,5 @@
 
   void * getElement(iterator p);
 
+  void destroyIt(iterator p);
 #endif

@@ -103,6 +103,7 @@ int processInput(char comando[], struct extra_info *ex_inf){
     return return_value;
 }
 
+
 int main(int argc, char const *argv[]){
     char comando[MAXLEN];
 
@@ -110,6 +111,9 @@ int main(int argc, char const *argv[]){
     ex_inf = (struct extra_info *) malloc(sizeof(struct extra_info));
 
     ex_inf->historial = CreateList();
+    ex_inf->memoria.lmalloc = CreateList();
+    ex_inf->memoria.lmmap = CreateList();
+    ex_inf->memoria.lshmt = CreateList();
 
     do{
         printPrompt();

@@ -23,11 +23,18 @@
   #include <pwd.h>
   #include <grp.h>
   #include <errno.h>
+  #include "dynlist.h"
   #define MAXLEN 1024 //maximum length of strings (arrays of 1024 chars)
 
-struct extra_info{
-  struct node * historial;
-
+struct trilist {
+  lista lmalloc;
+  lista lmmap;
+  lista lshmt;
 };
-  
+
+struct extra_info{
+  lista historial;
+  struct trilist memoria;
+};
+
 #endif
