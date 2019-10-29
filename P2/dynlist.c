@@ -19,7 +19,6 @@ struct node * CreateList(){
 }
 
 void InsertElement(struct node ** last, void *element){
-    int i;
     while (*last != NULL){ //'last' points to the last node
         last = &((*last)->next); //moves one node forward
     }
@@ -55,15 +54,21 @@ void disposeAll(struct node ** ptolist) {
 }
 
 iterator first(lista list) {
-  return &list;
+  lista * lp = malloc(sizeof(lista));
+  *lp = list;
+  return lp;
 }
 
 iterator next(iterator it) {
   return &(*it)->next;
 }
 
-iterator isLast(iterator it) {
-  return (*it) == NULL;
+int isLast(iterator it) {
+  if (*it == NULL) {
+    free(it);
+    return 1;
+  }
+  else return 0;
 }
 
 void * getElement(iterator p) {

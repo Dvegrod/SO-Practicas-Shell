@@ -27,7 +27,7 @@
 
   iterator next(iterator p);
 
-  iterator isLast(iterator p);
+  int isLast(iterator p);
 
   void * getElement(iterator p);
 
