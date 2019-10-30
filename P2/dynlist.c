@@ -44,10 +44,9 @@ int RemoveElement(struct node **plist, int position){
 
 int RemoveElementAt(struct node **plist, void * elem){
   struct node **pointertopointer = plist;
-  for (iterator i = first(*pointertopointer);!isLast(i);i = next(i)) {
+  for (iterator i = first(pointertopointer);!isLast(i);i = next(i)) {
     if (elem == getElement(i)) {
       RemoveElement(i,0);
-      destroyIt(i);
       return 0;
     }
   }
@@ -65,10 +64,8 @@ void disposeAll(struct node ** ptolist) {
       }*/
 }
 
-iterator first(lista list) {
-  lista * lp = malloc(sizeof(lista));
-  *lp = list;
-  return lp;
+iterator first(iterator it) {
+  return it;
 }
 
 iterator next(iterator it) {
@@ -77,7 +74,6 @@ iterator next(iterator it) {
 
 int isLast(iterator it) {
   if (*it == NULL) {
-    free(it);
     return 1;
   }
   else return 0;
@@ -88,5 +84,4 @@ void * getElement(iterator p) {
 }
 
 void destroyIt(iterator p) {
-  free(p);
 }

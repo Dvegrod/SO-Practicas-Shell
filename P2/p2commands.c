@@ -22,7 +22,7 @@ struct immap {
 };
 
 
-int buildElem(unsigned long tam, unsigned long where, lista list, void * ex) {
+int buildElem(unsigned long tam, unsigned long where, iterator list, void * ex) {
   struct melem * new = malloc(sizeof(struct melem));
   //Error
   if (new == NULL) {
@@ -40,15 +40,12 @@ int buildElem(unsigned long tam, unsigned long where, lista list, void * ex) {
   new->others = NULL;
   if (ex != NULL)
     new->others = ex;
-  InsertElement(&list,new);
+  InsertElement(list,new);
   return 0;
 }
 
 int showElem(lista list, int flag) {
-  iterator x = first(list);
-  printf("%i",!isLast(x));
-  printf("LOL");
-  for (iterator i = first(list); !isLast(i); i = next(i)) {
+  for (iterator i = first(&list); !isLast(i); i = next(i)) {
     struct melem * elem = getElement(i);
     printf("%lxu: size: %lu ",elem->dir,elem->size);
     switch (flag) {
@@ -74,30 +71,30 @@ int showElem(lista list, int flag) {
 
 int searchElem(lista list, int flag, struct melem ** e, void * id) {
   *e = NULL;
-  for (iterator i = first(list); !isLast(i); i = next(i)) {
+  for (iterator i = first(&list); !isLast(i); i = next(i)) {
     struct melem * elem = getElement(i);
     switch (flag) {
       case SS_MALLOC:
         if (elem->size == *((unsigned long *) id)) {
           *e = elem;
-          destroyIt(i); break;
+          break;
         }
       case SS_MMAP: {
         struct immap * others = elem->others;
         if (!strcmp(others->filename,(char *)id)) {
           *e = elem;
-          destroyIt(i); break;
+          break;
         }
       }
       case SS_SHM:
         if (*(int *)elem->others == *(int *)id) {
           *e = elem;
-          destroyIt(i); break;
+          break;
         }
       case SS_ADDR:
         if (elem->dir == *(unsigned long *)id) {
           *e = elem;
-          destroyIt(i); break;
+          break;
         }
       default: return -1;
     }
@@ -156,14 +153,14 @@ int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf
         return -1;
     }
     printf("allocated %d at %p",tam,tmp);
-    buildElem(tam,(unsigned long) tmp,ex_inf->memoria.lmalloc,NULL);
+    buildElem(tam,(unsigned long) tmp,&(ex_inf->memoria.lmalloc),NULL);
     return 0;
 }
 
 int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     unsigned int permisos_open = 0;
     unsigned int permisos_mmap = 0;
-    struct stat * statbuf = NULL;
+    struct stat * statbuf = malloc(sizeof(struct stat));
     int i = 0;
     int fd = 0;
     void *file_ptr;
@@ -199,7 +196,6 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     
     file_ptr = mmap(NULL,statbuf->st_size,permisos_mmap,MAP_SHARED,fd,0);
     if (file_ptr == MAP_FAILED){
-        free(statbuf);
         perror(strerror(errno));
         return -1;
     }
@@ -208,7 +204,8 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     struct immap * ifile = malloc(sizeof(struct immap));
     sprintf(ifile->filename,"%s",path);
     ifile->fd = fd;
-    buildElem(statbuf->st_size,(unsigned long) file_ptr,ex_inf->memoria.lmmap,ifile);
+    buildElem(statbuf->st_size,(unsigned long) file_ptr,&ex_inf->memoria.lmmap,ifile);
+    free(statbuf); //Pendiente de revision
     return 0;
 }
 
@@ -233,7 +230,7 @@ int asignar_crear_shared(char const * trozos[], int ntrozos, struct extra_info *
         return -1;
     }
     printf("Allocated shared memory (key %d) at %p",key,shm_ptr);
-    buildElem(size,(unsigned long) shm_ptr,ex_inf->memoria.lshmt,NULL);
+    buildElem(size,(unsigned long) shm_ptr,&ex_inf->memoria.lshmt,NULL);
     return 0;
 }
 
@@ -262,7 +259,7 @@ int asignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_in
     shmctl(shared_id,IPC_STAT,shstat);
     printf("Allocated shared memory (key %d) at %p",key,shm_ptr);
     //
-    buildElem(shstat->shm_segsz,(unsigned long) shm_ptr,ex_inf->memoria.lshmt,pkey);
+    buildElem(shstat->shm_segsz,(unsigned long) shm_ptr,&ex_inf->memoria.lshmt,pkey);
     free(shstat);
     return 0;
 }

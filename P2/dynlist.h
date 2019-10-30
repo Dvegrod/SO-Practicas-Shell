@@ -24,7 +24,7 @@
 
   void disposeAll(lista * ptolist);
 
-  iterator first(lista list);
+  iterator first(iterator list);
 
   iterator next(iterator p);
 
