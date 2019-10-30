@@ -4,11 +4,15 @@
 #define ASIGNAR_C_SHARED 4
 #define ASIGNAR_SHARED 8
 #define ASIGNAR_ADDR 16
+#define SS_MALLOC 1
+#define SS_MMAP 2
+#define SS_SHM 4
+#define SS_ADDR 8
 
 struct melem {
   unsigned long dir;
   unsigned long size;
-  char * date;
+  char date[30];
   void * others;
 };
 
@@ -18,7 +22,7 @@ struct immap {
 };
 
 
-int buildElem(unsigned long where,unsigned long tam, lista list, void * ex) {
+int buildElem(unsigned long tam, unsigned long where, lista list, void * ex) {
   struct melem * new = malloc(sizeof(struct melem));
   //Error
   if (new == NULL) {
@@ -28,21 +32,76 @@ int buildElem(unsigned long where,unsigned long tam, lista list, void * ex) {
   new->dir = where;
   new->size = tam;
   time_t * now = malloc(sizeof(time_t));
-  //Error
-  if (now == NULL) {
-    printf("%s",strerror(errno));
-    return -1;
-  }
   if (time(now)==-1){ //writes current time to NOW variable
     perror(strerror(errno));
     return -1;
   };
   strftime(new->date,30,"%a %b %d %T %Y",localtime(now));
-  free(now);
   new->others = NULL;
   if (ex != NULL)
-      new->others = ex;
+    new->others = ex;
   InsertElement(&list,new);
+  return 0;
+}
+
+int showElem(lista list, int flag) {
+  iterator x = first(list);
+  printf("%i",!isLast(x));
+  printf("LOL");
+  for (iterator i = first(list); !isLast(i); i = next(i)) {
+    struct melem * elem = getElement(i);
+    printf("%lxu: size: %lu ",elem->dir,elem->size);
+    switch (flag) {
+      case SS_MALLOC : {
+        printf("malloc ");
+        break;
+      }
+      case SS_MMAP : {
+        struct immap * others = elem->others;
+        printf("mmap %s (fd: %i) ",others->filename,others->fd);
+        break;
+      }
+      case SS_SHM : {
+        printf("shared memory (key: %i) ",*((int *) elem->others));
+        break;
+      }
+      default : return -1;//Temp
+    }
+    printf("%s\n",elem->date);
+  }
+  return 0;
+}
+
+int searchElem(lista list, int flag, struct melem ** e, void * id) {
+  *e = NULL;
+  for (iterator i = first(list); !isLast(i); i = next(i)) {
+    struct melem * elem = getElement(i);
+    switch (flag) {
+      case SS_MALLOC:
+        if (elem->size == *((unsigned long *) id)) {
+          *e = elem;
+          destroyIt(i); break;
+        }
+      case SS_MMAP: {
+        struct immap * others = elem->others;
+        if (!strcmp(others->filename,(char *)id)) {
+          *e = elem;
+          destroyIt(i); break;
+        }
+      }
+      case SS_SHM:
+        if (*(int *)elem->others == *(int *)id) {
+          *e = elem;
+          destroyIt(i); break;
+        }
+      case SS_ADDR:
+        if (elem->dir == *(unsigned long *)id) {
+          *e = elem;
+          destroyIt(i); break;
+        }
+      default: return -1;
+    }
+  }
   return 0;
 }
 
@@ -55,6 +114,9 @@ int asignar_shared(char const * trozos[], int ntrozos, struct extra_info *ex_inf
 
 int asignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
 
+    if (trozos[1] == NULL) return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
+                           | showElem(ex_inf->memoria.lmmap,SS_MMAP)
+                           | showElem(ex_inf->memoria.lshmt,SS_SHM);
     //Mapear opciones
     unsigned int options = 0x0;
     if (!strcmp(trozos[1],"-malloc")) {options = options | ASIGNAR_MALLOC;}
@@ -81,13 +143,8 @@ int asignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
 int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     int tam;
     void *tmp;
-    if (trozos[2] == NULL){
-        for (iterator i = first(ex_inf->memoria.lmalloc); !isLast(i); i = next(i)) {
-          struct melem * elem = getElement(i);
-          printf("%lxu: size: %lu malloc %s",elem->dir,elem->size,elem->date);
-        }
-        return 0;
-    }
+    if (trozos[2] == NULL)
+      return showElem(ex_inf->memoria.lmalloc,SS_MALLOC);
     tam = atoi(trozos[2]);
     if (tam==0){
         //malloc(0) ??
@@ -106,18 +163,13 @@ int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf
 int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     unsigned int permisos_open = 0;
     unsigned int permisos_mmap = 0;
-    struct stat * statbuf = malloc(sizeof(struct stat));
+    struct stat * statbuf = NULL;
     int i = 0;
     int fd = 0;
     void *file_ptr;
     char const *path = trozos[2];
     if (path==NULL){
-        for (iterator i = first(ex_inf->memoria.lmmap); !isLast(i); i = next(i)) {
-            struct melem * elem = getElement(i);
-            struct immap * others = elem->others;
-            printf("%lxu: size: %lu mmap %s %iu %s",elem->dir,elem->size,others->filename,others->fd,elem->date);
-        }
-        return 0;
+      showElem(ex_inf->memoria.lmmap,SS_MMAP);
     }
     //lee los permisos pasados por parámetro
     if (trozos[3]==NULL){
@@ -152,6 +204,7 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
         return -1;
     }
     printf("File %s mapped at %p",path,file_ptr);
+    //
     struct immap * ifile = malloc(sizeof(struct immap));
     sprintf(ifile->filename,"%s",path);
     ifile->fd = fd;
@@ -163,7 +216,7 @@ int asignar_crear_shared(char const * trozos[], int ntrozos, struct extra_info *
     int key = 0,size = 0,shared_id = 0;
     void *shm_ptr;
     if ((trozos[2]==NULL) || (trozos[3]==NULL)){ //no key or size are specified
-      return 0;//WHAT
+      return showElem(ex_inf->memoria.lshmt,SS_SHM);
     }
     key = atoi(trozos[2]);
     size = atoi(trozos[3]);
@@ -188,12 +241,7 @@ int asignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_in
     int key = 0, shared_id = 0;
     void *shm_ptr;
     if (trozos[2]==NULL){ //no key is specified
-        for (iterator i = first(ex_inf->memoria.lshmt); !isLast(i); i = next(i)) {
-            struct melem * elem = getElement(i);
-            int * pkey = elem->others;
-            printf("%lxu: size: %lu shared memory (key: %i) %s",elem->dir,elem->size,*pkey,elem->date);
-        }
-        return 0;
+      return showElem(ex_inf->memoria.lshmt,SS_SHM);
     }
     key = atoi(trozos[2]);
     
@@ -221,6 +269,11 @@ int asignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_in
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
+int desasignar_addr(char const * trozos[], int ntrozos, struct extra_info * ex_inf);
+int desasignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_inf);
+int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_inf);
+int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex_inf);
+
 
 int desasignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
 
@@ -251,28 +304,15 @@ int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex
     void * ptr = NULL;
     unsigned long tam;
     if (trozos[2]==NULL){
-        for (iterator i = first(ex_inf->memoria.lmalloc); !isLast(i); i = next(i)) {
-            struct melem * elem = getElement(i);
-            printf("%lxu: size: %lu malloc %s",elem->dir,elem->size,elem->date);
-        }
-        return 0;
+      return showElem(ex_inf->memoria.lmalloc,SS_MALLOC);
     }
     tam = strtoul(trozos[2],NULL,10);
+    //
     struct melem * e = NULL;
-    for (iterator i = first(ex_inf->memoria.lmalloc); !isLast(i); i = next(i)) {
-      struct melem * elem = getElement(i);
-      if (elem->size == tam) { //PENDIENTE
-        ptr = (void *) elem->dir;
-        e = elem;
-        destroyIt(i); break;
-      }
-    }
+    searchElem(ex_inf->memoria.lmalloc,SS_MALLOC,&e,&tam);
+    //
     if (ptr == NULL){
-        for (iterator i = first(ex_inf->memoria.lmalloc); !isLast(i); i = next(i)) {
-            struct melem * elem = getElement(i);
-            printf("%lxu: size: %lu malloc %s",elem->dir,elem->size,elem->date);
-        }
-        return 0;
+      return showElem(ex_inf->memoria.lmalloc,SS_MALLOC);
     }
     printf("Block at address %p deallocated (malloc)\n",ptr);
     free(ptr);
@@ -283,26 +323,11 @@ int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex
 int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
     char const *path = trozos[2];
     if (trozos[2]==NULL){
-        for (iterator i = first(ex_inf->memoria.lmmap); !isLast(i); i = next(i)) {
-            struct melem * elem = getElement(i);
-            struct immap * others = elem->others;
-            printf("%lxu: size: %lu mmap %s %iu %s",elem->dir,elem->size,others->filename,others->fd,elem->date);
-        }
-        return 0;
+      return showElem(ex_inf->memoria.lmmap,SS_MMAP);
     }
     //buscar fichero fich en la lista de ficheros mapeados a memoria, sacar también el puntero a la direccion fileptr
-    struct melem * e = NULL,* elem = NULL;
-    struct immap * others = NULL;
-    int n = 0;
-    for (iterator i = first(ex_inf->memoria.lmmap); !isLast(i); i = next(i)) {
-        elem = getElement(i);
-        others = elem->others;
-        n++;
-        if (!strcmp(others->filename,path)) {
-          e = elem;
-          destroyIt(i); break;
-        }
-    }
+    struct melem * e = NULL;
+    searchElem(ex_inf->memoria.lmmap,SS_MMAP,&e,(void *) path);//PENDIENTE CONST VOID
     //
     if (munmap((void *) e->dir,e->size)==-1){
         perror(strerror(errno));
@@ -317,29 +342,14 @@ int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_i
 int desasignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
     int shmid = 0, key = 0;
     if (trozos[2]==NULL){
-        for (iterator i = first(ex_inf->memoria.lshmt); !isLast(i); i = next(i)) {
-            struct melem * elem = getElement(i);
-            int * pkey = elem->others;
-            printf("%lxu: size: %lu shared memory (key: %i) %s",elem->dir,elem->size,*pkey,elem->date);
-        }
-        return 0;
+      return showElem(ex_inf->memoria.lshmt,SS_SHM);
     }
     key = atoi(trozos[2]);
     struct melem * e = NULL;
-    for (iterator i = first(ex_inf->memoria.lshmt); !isLast(i); i = next(i)) {
-        struct melem * elem = getElement(i);
-        if (*((int *)(elem->others)) == key) {
-          e = elem;
-          destroyIt(i); break;
-        }
-    }
-    if (key==0){ //WHAT clave no encontrada
-        for (iterator i = first(ex_inf->memoria.lshmt); !isLast(i); i = next(i)) {
-            struct melem * elem = getElement(i);
-            int * pkey = elem->others;
-            printf("%lxu: size: %lu shared memory (key: %i) %s",elem->dir,elem->size,*pkey,elem->date);
-        }
-        return -1;
+    searchElem(ex_inf->memoria.lshmt,SS_SHM,&e,&key);
+    //
+    if (key==0){
+      return showElem(ex_inf->memoria.lshmt,SS_SHM);
     }
     //recuperar de la lista la información de la clave (key) y la dirección (ptr)
     shmid = shmget(*((int *) e->others), 0, 0);
@@ -357,47 +367,57 @@ int desasignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex
 }
 
 int desasignar_addr(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
-    void *addr;
+    void * addr = (void *) trozos[2];
     if (trozos[2]==NULL){
-        //mostrar todas las direcciones asignadas (las 3 listas)
-        return 0;
+      return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
+        | showElem(ex_inf->memoria.lmmap,SS_MMAP)
+        | showElem(ex_inf->memoria.lshmt,SS_SHM);
     }
     //buscar la dirección addr en la lista
-    if (1/*reservada con malloc*/){
+    struct melem * e = NULL;
+    searchElem(ex_inf->memoria.lmalloc,SS_ADDR,&e,addr);
+    if (e != NULL){
         free(addr);
         printf("Block at address %p deallocated (malloc)\n",addr);
         //eliminar la entrada de la lista
         return 0;
     }
-    if (1/*reservada con mmap*/){
+    searchElem(ex_inf->memoria.lmmap,SS_ADDR,&e,addr);
+    if (e != NULL){
+        struct immap * others = e->others;
         //recuperar el path del fichero desde la lista
-        trozos[2] == "";//path del fichero
+        trozos[2] = others->filename;//path del fichero WHAT trozos dos cambia de direccion (produce no alcanzables? const?)
         return desasignar_mmap(trozos,ntrozos,ex_inf);
     }
-    if (1/*memoria compartida*/){
-        int key;
+    searchElem(ex_inf->memoria.lshmt,SS_ADDR,&e,addr);
+    if (e != NULL){
+        int key = *(int *)e->others;
         //recuperar la clave compartida de la lista
-        sprintf(trozos[2],"%d",key);
+        sprintf(trozos[2],"%d",key); //Lo mismo
         return desasignar_shared(trozos,ntrozos,ex_inf);
     }
+    //Not found
+    return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
+      | showElem(ex_inf->memoria.lmmap,SS_MMAP)
+      | showElem(ex_inf->memoria.lshmt,SS_SHM);
 }
 
 int borrarkey(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
     int shmid = 0, key = 0;
-    struct shmid_ds * shmbuf;
     if (trozos[2]==NULL){
         printf("No key was entered\n");
         return -1;
     }
-    shmid = shmget(key, 0, 0); //WAT?
+    key = atoi(trozos[2]);
+    shmid = shmget(key, 0, 0);
     if (shmid==-1){
         perror(strerror(errno));
         return -1;
     }
-    if (shmctl(shmid,IPC_RMID,shmbuf)==-1){
+    if (shmctl(shmid,IPC_RMID,NULL)==-1){
         perror(strerror(errno));
         return -1;
     }
-    printf("Shared memory region of key %d removed",key);
-    RemoveElementAt(&ex_inf->memoria.lshmt,)
+    printf("Shared memory region of key %d removed",key); //Nada es eliminado??
+    return 0;
 }

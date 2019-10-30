@@ -1,10 +1,10 @@
 CC=gcc
-CFLAGS=-Wall
+CFLAGS=-Wall -g
 
 all: shell info listar
 
 shell: shell.c dynlist.o p0commands.o p1commands.o p2commands.o exinf.h
-	$(CC) -o shell shell.c dynlist.o p0commands.o p1commands.o $(CFLAGS)
+	$(CC) -o shell shell.c dynlist.o p0commands.o p1commands.o p2commands.o $(CFLAGS)
 
 info: info.c p1commands.o exinf.h
 	$(CC) -o info info.c p1commands.o $(CFLAGS)

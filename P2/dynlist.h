@@ -8,8 +8,7 @@
 
 #ifndef __DYN_LIST
   #define __DYN_LIST
-  #include "exinf.h"
-  
+  #include <stdlib.h>
   //Interfaz
 
   typedef struct node * lista;
