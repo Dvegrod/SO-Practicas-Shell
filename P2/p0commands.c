@@ -8,6 +8,7 @@
   Grupo 4.3
 */
 
+
 int autores(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     char const *opcion = trozos[1];
     if (opcion == NULL){ //If there is no option
@@ -113,7 +114,7 @@ int hist(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
   char const *opcion = trozos[1];
   if (opcion != NULL) { //if there IS an option
     if (!strcmp(opcion,"-c")){ //if that option is "-c"
-        disposeAll(first((ex_inf)->historial));
+        disposeAll(first(&(ex_inf)->historial),free);
         printf("Cleared command history\n");
     }
     else
@@ -125,7 +126,7 @@ int hist(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
   else { //if there is NO option
     lista pointer = (ex_inf->historial);
     int n = 1;
-    for (iterator i = first(pointer); !isLast(i); i = next(i)) {
+    for (iterator i = first(&pointer); !isLast(i); i = next(i)) {
       printf("%d > %s\n",n,(char *)getElement(i));
       n++;
     }
