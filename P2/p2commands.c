@@ -9,6 +9,8 @@
 #define SS_SHM 4
 #define SS_ADDR 8
 
+//Funciones y estructuras para gestionar metadatos de memoria
+
 struct melem {
   void * dir;
   size_t size;
@@ -116,6 +118,8 @@ void disposeTrilist(struct extra_info * ex_inf) {
   disposeAll(&ex_inf->memoria.lmmap,freeMelem);
   disposeAll(&ex_inf->memoria.lshmt,freeMelem);
 }
+
+//-------------------------------------------------------------------------
 
 int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
 int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf);

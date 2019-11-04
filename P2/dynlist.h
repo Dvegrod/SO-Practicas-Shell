@@ -18,7 +18,7 @@
   
   void InsertElement(lista *last, void *element);
   
-  int RemoveElementAt(lista *plist, int position, void (*freeE)(void *));
+  int RemoveElementAt(lista *plist, iterator position, void (*freeE)(void *));
 
   int RemoveElement(lista *plist, void * elem, void (*freeE)(void *));
 
