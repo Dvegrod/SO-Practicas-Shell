@@ -34,5 +34,4 @@
 
   void * getElement(iterator p);
 
-  void destroyIt(iterator p); //DEPRECATED
 #endif

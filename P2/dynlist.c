@@ -86,6 +86,3 @@ int isLast(iterator it) {
 void * getElement(iterator p) {
   return (*p)->elem;
 }
-
-void destroyIt(iterator p) {
-}

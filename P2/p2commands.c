@@ -10,8 +10,8 @@
 #define SS_ADDR 8
 
 struct melem {
-  unsigned long dir;
-  unsigned long size;
+  void * dir;
+  size_t size;
   char date[30];
   void * others;
 };
@@ -22,7 +22,7 @@ struct immap {
 };
 
 
-int buildElem(unsigned long tam, unsigned long where, iterator list, void * ex) {
+int buildElem(unsigned long tam, void * where, iterator list, void * ex) {
   struct melem * new = malloc(sizeof(struct melem));
   //Error
   if (new == NULL) {
@@ -95,7 +95,7 @@ int searchElem(lista list, int flag, struct melem ** e, void * id) {
         }
         else break;
       case SS_ADDR:
-        if (elem->dir == *(unsigned long *)id) {
+        if (elem->dir == id) {
           *e = elem;
           return 0;
         }
@@ -117,13 +117,21 @@ int disposeMem(struct extra_info * ex_inf) {
   lista * ammap = &(ex_inf->memoria.lmmap);
   for (iterator i = first(ammap);!isEmptyList(*ammap); i = first(ammap)) {
     struct melem * elem = getElement(i);
-    //
+    munmap(elem->dir,elem->size);
     RemoveElementAt(i,0);
   }
   lista * ashm = &(ex_inf->memoria.lshmt);
   for (iterator i = first(ashm);!isEmptyList(*ashm); i = first(ashm)) {
     struct melem * elem = getElement(i);
-    //
+    int shmid = shmget(*((int *) elem->others), 0, 0);
+    if (shmid==-1){
+      perror(strerror(errno));
+      return -1;
+    }
+    if (shmctl(shmid,IPC_RMID,NULL)==-1){
+      perror(strerror(errno));
+      return -1;
+    }
     RemoveElementAt(i,0);
   }
   return 0;
@@ -180,7 +188,7 @@ int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf
         return -1;
     }
     printf("allocated %d at %p\n",tam,tmp);
-    buildElem(tam,(unsigned long) tmp,&(ex_inf->memoria.lmalloc),NULL);
+    buildElem(tam,tmp,&(ex_inf->memoria.lmalloc),NULL);
     return 0;
 }
 
@@ -231,7 +239,7 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     struct immap * ifile = malloc(sizeof(struct immap));
     sprintf(ifile->filename,"%s",path);
     ifile->fd = fd;
-    buildElem(statbuf->st_size,(unsigned long) file_ptr,&ex_inf->memoria.lmmap,ifile);
+    buildElem(statbuf->st_size,file_ptr,&ex_inf->memoria.lmmap,ifile);
     free(statbuf); //Pendiente de revision
     return 0;
 }
@@ -257,7 +265,7 @@ int asignar_crear_shared(char const * trozos[], int ntrozos, struct extra_info *
         return -1;
     }
     printf("Allocated shared memory (key %d) at %p\n",key,shm_ptr);
-    buildElem(size,(unsigned long) shm_ptr,&ex_inf->memoria.lshmt,NULL);
+    buildElem(size,shm_ptr,&ex_inf->memoria.lshmt,NULL);
     return 0;
 }
 
@@ -286,7 +294,7 @@ int asignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_in
     shmctl(shared_id,IPC_STAT,shstat);
     printf("Allocated shared memory (key %d) at %p\n",key,shm_ptr);
     //
-    buildElem(shstat->shm_segsz,(unsigned long) shm_ptr,&ex_inf->memoria.lshmt,pkey);
+    buildElem(shstat->shm_segsz,shm_ptr,&ex_inf->memoria.lshmt,pkey);
     free(shstat);
     return 0;
 }
@@ -338,7 +346,7 @@ int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex
       return showElem(ex_inf->memoria.lmalloc,SS_MALLOC);
     }
     printf("Block at address %p deallocated (malloc)\n",(void *) e->dir);
-    free((void *) e->dir);
+    free(e->dir);
     RemoveElement(&ex_inf->memoria.lmalloc,e);
     return 0;
 }
@@ -352,11 +360,11 @@ int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_i
     struct melem * e = NULL;
     searchElem(ex_inf->memoria.lmmap,SS_MMAP,&e,(void *) path);//PENDIENTE CONST VOID
     //
-    if (munmap((void *) e->dir,e->size)==-1){
+    if (munmap(e->dir,e->size)==-1){
         perror(strerror(errno));
         return -1;
     }
-    printf("Block at address %p deallocated (mmap)",(void *)e->dir);
+    printf("Block at address %p deallocated (mmap)",e->dir);
     //eliminar la entrada de la lista de archivos mapeados con mmap
     RemoveElement(&ex_inf->memoria.lmmap,e);
     return 0;
@@ -384,7 +392,7 @@ int desasignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex
         perror(strerror(errno));
         return -1;
     }
-    printf("Block at address %p deallocated (shared)\n",(void *)e->dir);
+    printf("Block at address %p deallocated (shared)\n",e->dir);
     RemoveElement(&ex_inf->memoria.lshmt,e);
     return 0;
 }
