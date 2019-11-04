@@ -120,8 +120,8 @@ int main(int argc, char const *argv[]){
         readInput(comando, ex_inf);
     } while(processInput(comando, ex_inf) != SHELL_EXIT_SIGNAL);
 
-    disposeAll(&ex_inf->historial); //cleans up and exits
-    disposeMem(ex_inf);
+    disposeAll(&ex_inf->historial,free); //cleans up and exits
+    disposeTrilist(ex_inf);
     free(ex_inf);
     return EXIT_SUCCESS;
 }

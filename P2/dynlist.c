@@ -27,7 +27,7 @@ void InsertElement(struct node ** last, void *element){
     (*last)->elem = element;
 }
 
-int RemoveElementAt(struct node **plist, int position){
+int RemoveElementAt(struct node **plist, int position, void (*freeE)(void *)){
   if (*plist == NULL) return -1;
 
   struct node **pointertopointer = plist; //To aim to the pointer in the list that aims to the node to be removed
@@ -37,24 +37,24 @@ int RemoveElementAt(struct node **plist, int position){
   }
   struct node *auxiliar = *pointertopointer;  //Auxiliar stores the memory address of the node to be removed
   *pointertopointer = (*pointertopointer)->next; //The pointer in the list that aims to the expiring node now aims to the node after it (sometimes NULL)
-  free(auxiliar->elem);
+  freeE(auxiliar->elem);
   free(auxiliar);
   return 0;
 }
 
-int RemoveElement(struct node **plist, void * elem){
+int RemoveElement(struct node **plist, void * elem,  void (*freeE)(void *)){
   struct node **pointertopointer = plist;
   for (iterator i = first(pointertopointer);!isLast(i);i = next(i)) {
     if (elem == getElement(i)) {
-      RemoveElement(i,0);
+      RemoveElement(i,0,freeE);
       return 0;
     }
   }
   return 1;
 }
 
-void disposeAll(struct node ** ptolist) {
-  while (RemoveElementAt(ptolist,0) == 0);
+void disposeAll(struct node ** ptolist, void (*freeE)(void *)) {
+  while (RemoveElementAt(ptolist,0,freeE) == 0);
   /* struct node * aux; //Otra posibilidad
   while (*ptolist != NULL)
   {

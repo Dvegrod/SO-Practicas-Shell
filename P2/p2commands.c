@@ -31,12 +31,12 @@ int buildElem(unsigned long tam, void * where, iterator list, void * ex) {
   }
   new->dir = where;
   new->size = tam;
-  time_t * now = malloc(sizeof(time_t));
-  if (time(now)==-1){ //writes current time to NOW variable
+  time_t now;
+  if (time(&now)==-1){ //writes current time to NOW variable
     perror(strerror(errno));
     return -1;
   };
-  strftime(new->date,30,"%a %b %d %T %Y",localtime(now));
+  strftime(new->date,30,"%a %b %d %T %Y",localtime(&now));
   new->others = NULL;
   if (ex != NULL)
     new->others = ex;
@@ -106,35 +106,15 @@ int searchElem(lista list, int flag, struct melem ** e, void * id) {
   return 0;
 }
 
+void freeMelem(void * elem) {
+  free(((struct melem *)elem)->others);
+  free(elem);
+}
 
-int disposeMem(struct extra_info * ex_inf) {
-  lista * amllc = &(ex_inf->memoria.lmalloc);
-  for (iterator i = first(amllc);!isEmptyList(*amllc); i = first(amllc)) {
-    struct melem * elem = getElement(i);
-    free((void *)elem->dir);
-    RemoveElementAt(i,0);
-  }
-  lista * ammap = &(ex_inf->memoria.lmmap);
-  for (iterator i = first(ammap);!isEmptyList(*ammap); i = first(ammap)) {
-    struct melem * elem = getElement(i);
-    munmap(elem->dir,elem->size);
-    RemoveElementAt(i,0);
-  }
-  lista * ashm = &(ex_inf->memoria.lshmt);
-  for (iterator i = first(ashm);!isEmptyList(*ashm); i = first(ashm)) {
-    struct melem * elem = getElement(i);
-    int shmid = shmget(*((int *) elem->others), 0, 0);
-    if (shmid==-1){
-      perror(strerror(errno));
-      return -1;
-    }
-    if (shmctl(shmid,IPC_RMID,NULL)==-1){
-      perror(strerror(errno));
-      return -1;
-    }
-    RemoveElementAt(i,0);
-  }
-  return 0;
+void disposeTrilist(struct extra_info * ex_inf) {
+  disposeAll(&ex_inf->memoria.lmalloc,freeMelem);
+  disposeAll(&ex_inf->memoria.lmmap,freeMelem);
+  disposeAll(&ex_inf->memoria.lshmt,freeMelem);
 }
 
 int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
@@ -347,7 +327,7 @@ int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex
     }
     printf("Block at address %p deallocated (malloc)\n",(void *) e->dir);
     free(e->dir);
-    RemoveElement(&ex_inf->memoria.lmalloc,e);
+    RemoveElement(&ex_inf->memoria.lmalloc,e,freeMelem);
     return 0;
 }
 
@@ -366,7 +346,7 @@ int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_i
     }
     printf("Block at address %p deallocated (mmap)",e->dir);
     //eliminar la entrada de la lista de archivos mapeados con mmap
-    RemoveElement(&ex_inf->memoria.lmmap,e);
+    RemoveElement(&ex_inf->memoria.lmmap,e,freeMelem);
     return 0;
 }
 
@@ -393,7 +373,7 @@ int desasignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex
         return -1;
     }
     printf("Block at address %p deallocated (shared)\n",e->dir);
-    RemoveElement(&ex_inf->memoria.lshmt,e);
+    RemoveElement(&ex_inf->memoria.lshmt,e,freeMelem);
     return 0;
 }
 
