@@ -141,27 +141,23 @@ int asignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     if (trozos[1] == NULL) return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
                            | showElem(ex_inf->memoria.lmmap,SS_MMAP)
                            | showElem(ex_inf->memoria.lshmt,SS_SHM);
-    //Mapear opciones
     unsigned int options = 0x0;
-    if (!strcmp(trozos[1],"-malloc")) {options = options | ASIGNAR_MALLOC;}
-    if (!strcmp(trozos[1],"-mmap")) {options = options | ASIGNAR_MMAP;}
-    if (!strcmp(trozos[1],"-crearshared")) {options = options | ASIGNAR_C_SHARED;}
-    if (!strcmp(trozos[1],"-shared")) {options = options | ASIGNAR_SHARED;}
-
-    //Llamar a la función adecuada
-    if(options & ASIGNAR_MALLOC){
-        return asignar_malloc(trozos,ntrozos,ex_inf);
+    if (!strcmp(trozos[1],"-malloc")) {
+      return asignar_malloc(trozos,ntrozos,ex_inf);
     }
-    if(options & ASIGNAR_MMAP){
-        return asignar_mmap(trozos,ntrozos,ex_inf);
+    if (!strcmp(trozos[1],"-mmap")) {
+      return asignar_mmap(trozos,ntrozos,ex_inf);
     }
-    if(options & ASIGNAR_C_SHARED){
-        return asignar_crear_shared(trozos,ntrozos,ex_inf);
+    if (!strcmp(trozos[1],"-crearshared")) {
+      return asignar_crear_shared(trozos,ntrozos,ex_inf);
     }
-    if(options & ASIGNAR_SHARED){
-        return asignar_shared(trozos,ntrozos,ex_inf);
+    if (!strcmp(trozos[1],"-shared")) {
+      return asignar_shared(trozos,ntrozos,ex_inf);
     }
-    //mostrar todas las direcciones asignadas
+    else{
+      //Mostrar todas las direcciones mapeadas
+      return 0;
+    }
 }
 
 int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
@@ -300,28 +296,24 @@ int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex
 
 
 int desasignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-
     //Mapear opciones
     unsigned int options = 0x0;
-    if (!strcmp(trozos[1],"-malloc")) {options = options | ASIGNAR_MALLOC;}
-    if (!strcmp(trozos[1],"-mmap")) {options = options | ASIGNAR_MMAP;}
-    if (!strcmp(trozos[1],"-shared")) {options = options | ASIGNAR_SHARED;}
-    if (!strcmp(trozos[1],"-addr")) {options = options | ASIGNAR_ADDR;}
-
-    //Llamar a la función adecuada
-    if(options & ASIGNAR_MALLOC){
-        return desasignar_malloc(trozos,ntrozos,ex_inf);
+    if (!strcmp(trozos[1],"-malloc")) {
+      return desasignar_malloc(trozos,ntrozos,ex_inf);
     }
-    if(options & ASIGNAR_MMAP){
-        return desasignar_mmap(trozos,ntrozos,ex_inf);
+    if (!strcmp(trozos[1],"-mmap")) {
+      return desasignar_mmap(trozos,ntrozos,ex_inf);
     }
-    if(options & ASIGNAR_SHARED){
-        return desasignar_shared(trozos,ntrozos,ex_inf);
+    if (!strcmp(trozos[1],"-shared")) {
+      return desasignar_shared(trozos,ntrozos,ex_inf);
     }
-    if(options & ASIGNAR_ADDR){
-        return desasignar_addr(trozos,ntrozos,ex_inf);
+    if (!strcmp(trozos[1],"-addr")) {
+      return desasignar_addr(trozos,ntrozos,ex_inf);
     }
-    //mostrar todas las direcciones asignadas
+    else{
+      //mostrar todas las direcciones mapeadas
+      return 0;
+    }
 }
 
 int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
@@ -416,8 +408,12 @@ int desasignar_addr(char const * trozos[], int ntrozos, struct extra_info * ex_i
     if (e != NULL){
         int key = *(int *)e->others;
         //recuperar la clave compartida de la lista
-        sprintf((char *) trozos[2],"%d",key); //Lo mismo
-        return desasignar_shared((char const **) trozos,ntrozos,ex_inf);
+        char * trozostmp[3];;
+        for (int i = 0; i<2; i++){
+          trozostmp[i] = trozos[i];
+        }
+        sprintf(trozostmp[2],"%d",key); //Lo mismo
+        return desasignar_shared(trozostmp,ntrozos,ex_inf);
     }
     //Not found
     return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
@@ -443,4 +439,131 @@ int borrarkey(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
     }
     printf("Shared memory region of key %d removed",key); //Nada es eliminado??
     return 0;
+}
+
+int volcar(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+  int cont = 25;
+  void *addr;
+
+  if (trozos[1]==NULL){
+    perror("Error: Address not specified\n");
+    return -1;
+  }
+  if (trozos[2]!=NULL) cont = atoi(trozos[2]);
+  addr = strtoul(trozos[1],NULL,16);
+  for (int i =0; i<=cont; i++){
+    printf("%s",addr*);
+    addr++;
+  }
+  return 0;
+}
+
+int llenar(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+  int cont = 128;
+  char byte = 0x41;
+  void* addr;
+
+  if (trozos[1]==NULL){
+    perror("Error: Address not specified\n");
+    return -1;
+  }
+  if (trozos[2]!=NULL) cont = atoi(trozos[2]);
+  if (trozos[3]!=NULL) byte = trozos[3][0];
+
+  for(int i = 0;i<=cont;i++){
+    addr* = byte;
+    addr++;
+  }
+  return 0;
+}
+
+int recursiva(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+  if (trozos[1]==NULL){
+    printf("Error: No parameter specified\n");
+    return -1;
+  }
+  int num = atoi(trozos[1]);
+  recursive_fun(n);
+  return 0;
+}
+
+void recursive_fun(int n){
+  char array[2048];
+  static char static_array[2048];
+
+  printf("Parameter n: %d en %p",n,&n);
+  printf("Array in %p",array);
+  printf("Static array in %p",static_array);
+
+  if(--n > 0) recursive_fun(n);
+}
+
+int rfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+  void *addr;
+  int cont=-1;
+  struct stat* statbuf;
+  int fd;
+  if (trozos[1]==NULL){
+    printf("Error: File not specified\n");
+    return -1;
+  }
+  if (trozos[2]==NULL){
+    perror("Error: Address not specified\n");
+    return -1;
+  }
+  if (trozos[3]!=NULL) cont = atoi(trozos[3]);
+  fd = open(trozos[1],0);
+  if (fd==-1){
+    perror(strerror(errno));
+    return -1;
+  }
+  if (cont==-1){
+    stat(trozos[1],statbuf);
+    cont = statbuf->st_size;
+  }
+  if (read(fd,addr,cont)==-1){
+    perror(strerror(errno));
+    return -1;
+  }
+  return 0;
+}
+
+int wfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+  char overwrite = 0;
+  void* addr;
+  int cont, fd;
+  if (trozos[1][0]=="-") {
+    if (trozos[1][1]=="o"){
+      overwrite=1;
+    }
+    else{
+      perror("Error: option %s unrecognised\n", trozos[1]);
+      return -1;
+    }
+  }
+  if (trozos[1+overwrite]==NULL){
+    perror("Error: File not specified\n");
+    return -1;
+  }
+  if (trozos[2+overwrite]==NULL){
+    perror("Error: Address not specified\n");
+    return -1;
+  }
+  if (trozos[3+overwrite]==NULL){
+    perror("Error: cont not specified\n");
+    return -1;
+  }
+  addr = strtoul(trozos[2+overwrite]);
+  cont = atoi(trozos[3+overwrite]);
+  if (overwrite){
+    fd = open(trozos[1+overwrite],O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+  }
+  else{
+    fd = open(trozos[1+overwrite],O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+  }
+  if (write(fd, addr, count)==-1){
+    perror(strerror(errno));
+    return -1;
+  }
+  return 0;
 }
