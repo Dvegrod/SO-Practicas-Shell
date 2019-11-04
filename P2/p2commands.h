@@ -21,5 +21,6 @@
     int rfich(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
     
     int wfich(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
-    
+//--------------------------------------------------------------------------------
+    int disposeMem(struct extra_info *ex_inf);
 #endif

@@ -47,7 +47,7 @@ int buildElem(unsigned long tam, unsigned long where, iterator list, void * ex) 
 int showElem(lista list, int flag) {
   for (iterator i = first(&list); !isLast(i); i = next(i)) {
     struct melem * elem = getElement(i);
-    printf("%lxu: size: %lu ",elem->dir,elem->size);
+    printf("%p: size: %lu ",(void *) elem->dir,elem->size);
     switch (flag) {
       case SS_MALLOC : {
         printf("malloc ");
@@ -102,6 +102,29 @@ int searchElem(lista list, int flag, struct melem ** e, void * id) {
         else break;
       default: return -1;
     }
+  }
+  return 0;
+}
+
+
+int disposeMem(struct extra_info * ex_inf) {
+  lista * amllc = &(ex_inf->memoria.lmalloc);
+  for (iterator i = first(amllc);!isEmptyList(*amllc); i = first(amllc)) {
+    struct melem * elem = getElement(i);
+    free((void *)elem->dir);
+    RemoveElementAt(i,0);
+  }
+  lista * ammap = &(ex_inf->memoria.lmmap);
+  for (iterator i = first(ammap);!isEmptyList(*ammap); i = first(ammap)) {
+    struct melem * elem = getElement(i);
+    //
+    RemoveElementAt(i,0);
+  }
+  lista * ashm = &(ex_inf->memoria.lshmt);
+  for (iterator i = first(ashm);!isEmptyList(*ashm); i = first(ashm)) {
+    struct melem * elem = getElement(i);
+    //
+    RemoveElementAt(i,0);
   }
   return 0;
 }
@@ -316,7 +339,7 @@ int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex
     }
     printf("Block at address %p deallocated (malloc)\n",(void *) e->dir);
     free((void *) e->dir);
-    RemoveElementAt(&ex_inf->memoria.lmalloc,e);
+    RemoveElement(&ex_inf->memoria.lmalloc,e);
     return 0;
 }
 
@@ -333,9 +356,9 @@ int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_i
         perror(strerror(errno));
         return -1;
     }
-    printf("Block at address %lux deallocated (mmap)",e->dir);
+    printf("Block at address %p deallocated (mmap)",(void *)e->dir);
     //eliminar la entrada de la lista de archivos mapeados con mmap
-    RemoveElementAt(&ex_inf->memoria.lmmap,e);
+    RemoveElement(&ex_inf->memoria.lmmap,e);
     return 0;
 }
 
@@ -361,8 +384,8 @@ int desasignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex
         perror(strerror(errno));
         return -1;
     }
-    printf("Block at address %lux deallocated (shared)\n",e->dir);
-    RemoveElementAt(&ex_inf->memoria.lshmt,e);
+    printf("Block at address %p deallocated (shared)\n",(void *)e->dir);
+    RemoveElement(&ex_inf->memoria.lshmt,e);
     return 0;
 }
 
@@ -393,8 +416,8 @@ int desasignar_addr(char const * trozos[], int ntrozos, struct extra_info * ex_i
     if (e != NULL){
         int key = *(int *)e->others;
         //recuperar la clave compartida de la lista
-        sprintf(trozos[2],"%d",key); //Lo mismo
-        return desasignar_shared(trozos,ntrozos,ex_inf);
+        sprintf((char *) trozos[2],"%d",key); //Lo mismo
+        return desasignar_shared((char const **) trozos,ntrozos,ex_inf);
     }
     //Not found
     return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)

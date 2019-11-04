@@ -27,7 +27,7 @@ void InsertElement(struct node ** last, void *element){
     (*last)->elem = element;
 }
 
-int RemoveElement(struct node **plist, int position){
+int RemoveElementAt(struct node **plist, int position){
   if (*plist == NULL) return -1;
 
   struct node **pointertopointer = plist; //To aim to the pointer in the list that aims to the node to be removed
@@ -42,7 +42,7 @@ int RemoveElement(struct node **plist, int position){
   return 0;
 }
 
-int RemoveElementAt(struct node **plist, void * elem){
+int RemoveElement(struct node **plist, void * elem){
   struct node **pointertopointer = plist;
   for (iterator i = first(pointertopointer);!isLast(i);i = next(i)) {
     if (elem == getElement(i)) {
@@ -54,7 +54,7 @@ int RemoveElementAt(struct node **plist, void * elem){
 }
 
 void disposeAll(struct node ** ptolist) {
-  while (RemoveElement(ptolist,0) == 0);
+  while (RemoveElementAt(ptolist,0) == 0);
   /* struct node * aux; //Otra posibilidad
   while (*ptolist != NULL)
   {
@@ -62,6 +62,10 @@ void disposeAll(struct node ** ptolist) {
       *ptolist = aux->next;
       free(aux);
       }*/
+}
+
+int isEmptyList(lista l) {
+  return (l == NULL);
 }
 
 iterator first(iterator it) {
