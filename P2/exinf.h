@@ -23,6 +23,7 @@
   #include <pwd.h>
   #include <grp.h>
   #include <errno.h>
+  #include <ctype.h>
   #include "dynlist.h"
   #define MAXLEN 1024 //maximum length of strings (arrays of 1024 chars)
 
