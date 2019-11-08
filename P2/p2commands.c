@@ -421,11 +421,11 @@ int borrarkey(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
     key = atoi(trozos[2]);
     shmid = shmget(key, 0, 0);
     if (shmid==-1){
-        perror(strerror(errno));
+        perror("Error on key delete");
         return -1;
     }
     if (shmctl(shmid,IPC_RMID,NULL)==-1){
-        perror(strerror(errno));
+        perror("Error on key delete");
         return -1;
     }
     printf("Shared memory region of key %d removed",key); //Nada es eliminado??
@@ -437,7 +437,7 @@ int volcar(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   char const *addr;
 
   if (trozos[1]==NULL){
-    perror("Error: Address not specified\n");
+    perror("Error volcar: Address not specified\n");
     return -1;
   }
   if (trozos[2]!=NULL) cont = atoi(trozos[2]);
@@ -464,14 +464,14 @@ int llenar(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   char* addr;
 
   if (trozos[1]==NULL){
-    perror("Error: Address not specified\n");
+    perror("Error llenar: Address not specified\n");
     return -1;
   }
-  else addr = (char *)strtoul(trozos[1],NULL,10);
+  else addr = (char *)strtoul(trozos[1],NULL,16);
   if (trozos[2]!=NULL) cont = atoi(trozos[2]);
   if (trozos[3]!=NULL) byte = trozos[3][0];
 
-  for(int i = 0;i<=cont;i++) *(addr++) = byte;
+  for(int i = 0;i<cont;i++) *(addr++) = byte;
   return 0;
 }
 
@@ -479,16 +479,16 @@ void recursive_fun(int n) {
   char array[2048];
   static char static_array[2048];
 
-  printf("Parameter n: %d en %p",n,&n);
-  printf("Array in %p",array);
-  printf("Static array in %p",static_array);
+  printf("Parameter n: %d en %p\n",n,&n);
+  printf("Array in %p\n",array);
+  printf("Static array in %p\n",static_array);
 
   if(--n > 0) recursive_fun(n);
 }
 
 int recursiva(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   if (trozos[1]==NULL){
-    printf("Error: No parameter specified\n");
+    printf("Error recursiva: No parameter specified\n");
     return -1;
   }
   int num = atoi(trozos[1]);
@@ -499,30 +499,30 @@ int recursiva(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
 int rfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   void *addr;
   int cont = -1;
-  struct stat* statbuf = NULL;
+  struct stat statbuf;
   int fd;
   if (trozos[1]==NULL){
-    printf("Error: File not specified\n");
+    printf("Error rfich: File not specified\n");
     return -1;
   }
   if (trozos[2]==NULL){
-    perror("Error: Address not specified\n");
+    perror("Error rfich: Address not specified\n");
     return -1;
   }
   else addr = (void *)strtoul(trozos[2],NULL,16);
   if (trozos[3]!=NULL) cont = atoi(trozos[3]);
-  fd = open(trozos[1],0);
+  fd = open(trozos[1],O_RDONLY);
   if (fd==-1){
-    perror(strerror(errno));
+    perror("Error rfich");
     return -1;
   }
   if (cont==-1){
-    if (stat(trozos[1],statbuf) == -1) perror(strerror(errno));
+    if (stat(trozos[1],&statbuf) == -1) perror("Error rfich");
     else
-      cont = statbuf->st_size;
+      cont = statbuf.st_size;
   }
   if (read(fd,addr,cont)==-1){
-    perror(strerror(errno));
+    perror("Error rfich");
     return -1;
   }
   return 0;
@@ -535,32 +535,33 @@ int wfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   if (!strcmp("-o",trozos[1])) overwrite=1;
   else
     if (trozos[1][0] == '-'){
-      printf("Error: option %s unrecognised\n", trozos[1]);
+      printf("Error wfich: option %s unrecognised\n", trozos[1]);
       return -1;
     }
 
   if (trozos[1+overwrite]==NULL){
-    perror("Error: File not specified\n");
+    perror("Error wfich: File not specified\n");
     return -1;
   }
   if (trozos[2+overwrite]==NULL){
-    perror("Error: Address not specified\n");
+    perror("Error wfich: Address not specified\n");
     return -1;
   }
   if (trozos[3+overwrite]==NULL){
-    perror("Error: cont not specified\n");
+    perror("Error wfich: cont not specified\n");
     return -1;
   }
   addr = (void *) strtoul(trozos[2+overwrite],NULL,16);
   cont = atoi(trozos[3+overwrite]);
   if (overwrite){
-    fd = open(trozos[1+overwrite],O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+    fd = open(trozos[1+overwrite],O_CREAT | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
   }
   else{
-    fd = open(trozos[1+overwrite],O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+    fd = open(trozos[1+overwrite],O_CREAT | O_EXCL | O_WRONLY, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
   }
+  if (fd == -1) perror("Error");
   if (write(fd, addr, cont)==-1){
-    perror(strerror(errno));
+    perror("Error wfich");
     return -1;
   }
   return 0;

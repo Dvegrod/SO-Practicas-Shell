@@ -127,7 +127,7 @@ int hist(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     lista pointer = (ex_inf->historial);
     int n = 1;
     for (iterator i = first(&pointer); !isLast(i); i = next(i)) {
-      printf("%d > %s\n",n,(char *)getElement(i));
+      printf("%2d > %s\n",n,(char *)getElement(i));
       n++;
     }
   }
