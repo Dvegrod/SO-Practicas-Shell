@@ -189,12 +189,13 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     }
 
     else{
-        for (int i = 0;trozos[3][i]!='\0';i++)
-        {
-            if (trozos[3][i]=='r'){ (permisos_open = O_RDONLY); (permisos_mmap |= PROT_READ);};
-            if (trozos[3][i]=='w'){ (permisos_open = O_WRONLY); (permisos_mmap |= PROT_WRITE);};
-            if (trozos[3][i]=='x'){ (permisos_open = O_RDWR); (permisos_mmap |= PROT_EXEC);};
+        for (int i = 0;trozos[3][i]!='\0';i++){
+            if (trozos[3][i]=='r') (permisos_mmap |= PROT_READ);
+            if (trozos[3][i]=='w') (permisos_mmap |= PROT_WRITE);
+            if (trozos[3][i]=='x') (permisos_mmap |= PROT_EXEC);
         }
+        permisos_open = permisos_mmap & PROT_READ && permisos_mmap & PROT_WRITE ? O_RDWR :
+          permisos_mmap & PROT_WRITE ? O_WRONLY : O_RDONLY;
     }
 
     fd = open(path,permisos_open,0);
