@@ -28,14 +28,14 @@ int buildElem(unsigned long tam, void * where, iterator list, void * ex) {
   struct melem * new = malloc(sizeof(struct melem));
   //Error
   if (new == NULL) {
-    printf("%s",strerror(errno));
+    perror("Error: BuildElem");
     return -1;
   }
   new->dir = where;
   new->size = tam;
   time_t now;
   if (time(&now)==-1){ //writes current time to NOW variable
-    perror(strerror(errno));
+    perror("Error BuildElem");
     return -1;
   };
   strftime(new->date,30,"%a %b %d %T %Y",localtime(&now));
@@ -184,35 +184,37 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     }
     //lee los permisos pasados por parámetro
     if (trozos[3]==NULL){
-        permisos_open = S_IRWXU;
+        permisos_open = O_RDWR;
         permisos_mmap = PROT_READ | PROT_WRITE | PROT_EXEC;
     }
+
     else{
         for (int i = 0;trozos[3][i]!='\0';i++)
         {
-            if (trozos[3][i]=='r'){ (permisos_open |= S_IRUSR); (permisos_mmap |= PROT_READ);};
-            if (trozos[3][i]=='w'){ (permisos_open |= S_IWUSR); (permisos_mmap |= PROT_WRITE);};
-            if (trozos[3][i]=='x'){ (permisos_open |= S_IXUSR); (permisos_mmap |= PROT_EXEC);};
+            if (trozos[3][i]=='r'){ (permisos_open = O_RDONLY); (permisos_mmap |= PROT_READ);};
+            if (trozos[3][i]=='w'){ (permisos_open = O_WRONLY); (permisos_mmap |= PROT_WRITE);};
+            if (trozos[3][i]=='x'){ (permisos_open = O_RDWR); (permisos_mmap |= PROT_EXEC);};
         }
     }
-    
-    fd = open(path,0,permisos_open);
+
+    fd = open(path,permisos_open,0);
     if (fd==-1){
-        perror(strerror(errno));
+        perror("Error en open");
         return -1;
     }
-    
+
     if (fstat(fd,statbuf)==-1){
         free(statbuf);
-        perror(strerror(errno));
+        perror("Error en fstat");
         return -1;
     }
-    
+
     file_ptr = mmap(NULL,statbuf->st_size,permisos_mmap,MAP_SHARED,fd,0);
     if (file_ptr == MAP_FAILED){
-        perror(strerror(errno));
+        perror("Error en mmap");
         return -1;
     }
+
     printf("File %s mapped at %p\n",path,file_ptr);
     //
     struct immap * ifile = malloc(sizeof(struct immap));
