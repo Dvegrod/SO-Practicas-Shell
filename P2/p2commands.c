@@ -164,7 +164,7 @@ int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf
     }
     tmp = malloc(tam);
     if (tmp==NULL){
-        printf("Memory allocation failed\n");
+        printf("Error: Memory allocation failed\n");
         return -1;
     }
     printf("allocated %d at %p\n",tam,tmp);
@@ -180,6 +180,7 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     void *file_ptr;
     char const *path = trozos[2];
     if (path==NULL){
+      //Lista direcciones de memoria asignadas con mmap
       showElem(ex_inf->memoria.lmmap,SS_MMAP);
     }
     //lee los permisos pasados por parámetro
@@ -194,25 +195,26 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
             if (trozos[3][i]=='w') (permisos_mmap |= PROT_WRITE);
             if (trozos[3][i]=='x') (permisos_mmap |= PROT_EXEC);
         }
+        //This assigns permisos_open the corresponding permission flag, depending on the mmap flags
         permisos_open = permisos_mmap & PROT_READ && permisos_mmap & PROT_WRITE ? O_RDWR :
-          permisos_mmap & PROT_WRITE ? O_WRONLY : O_RDONLY;
+                          permisos_mmap & PROT_WRITE ? O_WRONLY : O_RDONLY;
     }
 
-    fd = open(path,permisos_open,0);
+    fd = open(path,permisos_open);
     if (fd==-1){
-        perror("Error en open");
+        perror("Error: open in asignar -mmap");
         return -1;
     }
 
     if (fstat(fd,statbuf)==-1){
         free(statbuf);
-        perror("Error en fstat");
+        perror("Error: fstat in asignar -mmap");
         return -1;
     }
 
-    file_ptr = mmap(NULL,statbuf->st_size,permisos_mmap,MAP_SHARED,fd,0);
+    file_ptr = mmap(NULL,statbuf->st_size,permisos_mmap,MAP_PRIVATE,fd,0);
     if (file_ptr == MAP_FAILED){
-        perror("Error en mmap");
+        perror("Error: mmap in asignar -mmap");
         return -1;
     }
 
@@ -221,29 +223,31 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     struct immap * ifile = malloc(sizeof(struct immap));
     sprintf(ifile->filename,"%s",path);
     ifile->fd = fd;
+    //Guarda la entrada en el historial de reservas de memoria
     buildElem(statbuf->st_size,file_ptr,&ex_inf->memoria.lmmap,ifile);
     free(statbuf); //Pendiente de revision
     return 0;
 }
 
 int asignar_crear_shared(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-    int key = 0,size = 0,shared_id = 0;
+    key_t key = 0;
+    int size = 0,shared_id = 0;
     void *shm_ptr;
     if ((trozos[2]==NULL) || (trozos[3]==NULL)){ //no key or size are specified
       return showElem(ex_inf->memoria.lshmt,SS_SHM);
     }
-    key = atoi(trozos[2]);
+    key = (key_t) strtoul(trozos[2],NULL,10);
     size = atoi(trozos[3]);
-    
+
     shared_id = shmget(key,size,IPC_CREAT|IPC_EXCL);
     if (shared_id==-1){ //if shmget fails
-        perror(strerror(errno));
+        perror("Error: shmget in asignar -crearshared");
         return -1;
     }
-    
+
     shm_ptr = shmat(shared_id,NULL,0);
     if (shm_ptr == MAP_FAILED){
-        perror(strerror(errno));
+        perror("Error: shmat in asignar -crearshared");
         return -1;
     }
     printf("Allocated shared memory (key %d) at %p\n",key,shm_ptr);
@@ -258,15 +262,15 @@ int asignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_in
       return showElem(ex_inf->memoria.lshmt,SS_SHM);
     }
     key = atoi(trozos[2]);
-    
+
     shared_id = shmget(key,0,0);
     if (shared_id == -1){
-        perror(strerror(errno));
+        perror("Error: shmget in asignar -shared");
         return -1;
     }
     shm_ptr = shmat(shared_id,NULL,0);
     if (shm_ptr == MAP_FAILED){
-        perror(strerror(errno));
+        perror("Error: shmget in asignar -shared");
         return -1;
     }
     int * pkey = malloc(sizeof(int));
@@ -339,7 +343,7 @@ int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_i
     searchElem(ex_inf->memoria.lmmap,SS_MMAP,&e,(void *) path);//PENDIENTE CONST VOID
     //
     if (munmap(e->dir,e->size)==-1){
-        perror(strerror(errno));
+        perror("Error: munmap in desasignar -mmap");
         return -1;
     }
     printf("Block at address %p deallocated (mmap)",e->dir);
@@ -363,11 +367,11 @@ int desasignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex
     //recuperar de la lista la información de la clave (key) y la dirección (ptr)
     shmid = shmget(*((int *) e->others), 0, 0);
     if (shmid==-1){
-        perror(strerror(errno));
+        perror("Error: shmget in desasignar -shared");
         return -1;
     }
     if (shmctl(shmid,IPC_RMID,NULL)==-1){
-        perror(strerror(errno));
+        perror("Error: shmctl in desasignar -shared");
         return -1;
     }
     printf("Block at address %p deallocated (shared)\n",e->dir);
@@ -416,19 +420,25 @@ int desasignar_addr(char const * trozos[], int ntrozos, struct extra_info * ex_i
 }
 
 int borrarkey(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
-    int shmid = 0, key = 0;
+    int shmid = 0;
+    key_t key = 0;
     if (trozos[2]==NULL){
         printf("No key was entered\n");
         return -1;
     }
-    key = atoi(trozos[2]);
+    key =(key_t) strtoul(trozos[2],NULL,10);
+    if (key==IPC_PRIVATE){
+      printf("Error borrarkey: Invalid key\n");
+      return -1;
+    }
+    //PENDIENTE PREGUNTAR POR QUÉ LA FUNCIÓN DE EJEMPLO DEL ENUNCIADO LOS ARGUMENTOS DE SHMGET SON shmget(key,0,666)
     shmid = shmget(key, 0, 0);
     if (shmid==-1){
-        perror("Error on key delete");
+        perror("Error: shmget in borrarkey");
         return -1;
     }
     if (shmctl(shmid,IPC_RMID,NULL)==-1){
-        perror("Error on key delete");
+        perror("Error: shmctl in borrarkey");
         return -1;
     }
     printf("Shared memory region of key %d removed",key); //Nada es eliminado??
@@ -509,23 +519,23 @@ int rfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
     return -1;
   }
   if (trozos[2]==NULL){
-    perror("Error rfich: Address not specified\n");
+    printf("Error rfich: Address not specified\n");
     return -1;
   }
   else addr = (void *)strtoul(trozos[2],NULL,16);
   if (trozos[3]!=NULL) cont = atoi(trozos[3]);
   fd = open(trozos[1],O_RDONLY);
   if (fd==-1){
-    perror("Error rfich");
+    perror("Error: open in rfich");
     return -1;
   }
   if (cont==-1){
-    if (stat(trozos[1],&statbuf) == -1) perror("Error rfich");
+    if (stat(trozos[1],&statbuf) == -1) perror("Error: stat in rfich");
     else
       cont = statbuf.st_size;
   }
   if (read(fd,addr,cont)==-1){
-    perror("Error rfich");
+    perror("Error: read in rfich");
     return -1;
   }
   return 0;
@@ -543,15 +553,15 @@ int wfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
     }
 
   if (trozos[1+overwrite]==NULL){
-    perror("Error wfich: File not specified\n");
+    printf("Error wfich: File not specified\n");
     return -1;
   }
   if (trozos[2+overwrite]==NULL){
-    perror("Error wfich: Address not specified\n");
+    printf("Error wfich: Address not specified\n");
     return -1;
   }
   if (trozos[3+overwrite]==NULL){
-    perror("Error wfich: cont not specified\n");
+    printf("Error wfich: cont not specified\n");
     return -1;
   }
   addr = (void *) strtoul(trozos[2+overwrite],NULL,16);
@@ -564,8 +574,9 @@ int wfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   }
   if (fd == -1) perror("Error");
   if (write(fd, addr, cont)==-1){
-    perror("Error wfich");
+    perror("Error: write in wfich");
     return -1;
   }
   return 0;
 }
+
