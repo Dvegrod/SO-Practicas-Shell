@@ -164,7 +164,7 @@ int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf
     }
     tmp = malloc(tam);
     if (tmp==NULL){
-        printf("Error: Memory allocation failed\n");
+        fprintf(stderr, "Error: Memory allocation failed\n");
         return -1;
     }
     printf("allocated %d at %p\n",tam,tmp);
@@ -311,7 +311,7 @@ int desasignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
       return desasignar_addr(trozos,ntrozos,ex_inf);
     }
     else{
-      printf("Error desasignar: illegal argument \"%s\" (-malloc,-mmap,-shared,-addr)\n",trozos[1]);
+      fprintf(stderr, "Error desasignar: illegal argument \"%s\" (-malloc,-mmap,-shared,-addr)\n",trozos[1]);
       return 0;
     }
 }
@@ -430,7 +430,7 @@ int borrarkey(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
     }
     key =(key_t) strtoul(trozos[2],NULL,10);
     if (key==IPC_PRIVATE){
-      printf("Error borrarkey: Invalid key\n");
+      fprintf(stderr, "Error borrarkey: Invalid key\n");
       return -1;
     }
     shmid = shmget(key, 0, 0666); //0666 da permisos de lectura+escritura a todos los usuarios
@@ -469,7 +469,7 @@ int cmd_mem(char const * trozos[], int ntrozos, struct extra_info * ex_inf) {
                                            | showElem(ex_inf->memoria.lmmap,SS_MMAP)
                                            | showElem(ex_inf->memoria.lshmt,SS_SHM);
   //Not a valid argument:
-  printf("Error mem: illegal argument \"%s\" (-malloc,-mmap,-shared)\n",trozos[1]);
+  fprintf(stderr, "Error mem: illegal argument \"%s\" (-malloc,-mmap,-shared)\n",trozos[1]);
   return -1;
 }
 
@@ -529,7 +529,7 @@ void recursive_fun(int n) {
 
 int recursiva(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   if (trozos[1]==NULL){
-    printf("Error recursiva: No parameter specified\n");
+    fprintf(stderr, "Error recursiva: No parameter specified\n");
     return -1;
   }
   int num = atoi(trozos[1]);
@@ -543,11 +543,11 @@ int rfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   struct stat statbuf;
   int fd;
   if (trozos[1]==NULL){
-    printf("Error rfich: File not specified\n");
+    fprintf(stderr, "Error rfich: File not specified\n");
     return -1;
   }
   if (trozos[2]==NULL){
-    printf("Error rfich: Address not specified\n");
+    fprintf(stderr, "Error rfich: Address not specified\n");
     return -1;
   }
   else addr = (void *)strtoul(trozos[2],NULL,16);
@@ -574,26 +574,26 @@ int wfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   void* addr;
   int cont, fd;
   if (trozos[1] == NULL) {
-    printf("Error wfich: no arguments (wfich [-o] file address cont)");
+    fprintf(stderr, "Error wfich: no arguments (wfich [-o] file address cont)");
     return -1;
   }
   if (!strcmp("-o",trozos[1])) overwrite=1;
   else
     if (trozos[1][0] == '-'){
-      printf("Error wfich: option %s unrecognised\n", trozos[1]);
+      fprintf(stderr, "Error wfich: option %s unrecognised\n", trozos[1]);
       return -1;
     }
 
   if (trozos[1+overwrite]==NULL){
-    printf("Error wfich: File not specified\n");
+    fprintf(stderr, "Error wfich: File not specified\n");
     return -1;
   }
   if (trozos[2+overwrite]==NULL){
-    printf("Error wfich: Address not specified\n");
+    fprintf(stderr, "Error wfich: Address not specified\n");
     return -1;
   }
   if (trozos[3+overwrite]==NULL){
-    printf("Error wfich: cont not specified\n");
+    fprintf(stderr, "Error wfich: cont not specified\n");
     return -1;
   }
   addr = (void *) strtoul(trozos[2+overwrite],NULL,16);
