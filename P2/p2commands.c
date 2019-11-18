@@ -311,7 +311,7 @@ int desasignar(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
         return -1;
       }
       else{
-        desasignar_addr(trozos,ntrozos,ex_inf);
+        return desasignar_addr(trozos,ntrozos,ex_inf);
       }
     }
 }
@@ -422,11 +422,11 @@ int desasignar_addr(const char *trozos[],int ntrozos, struct extra_info * ex_inf
 int borrarkey(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
     int shmid = 0;
     key_t key = 0;
-    if (trozos[2]==NULL){
+    if (trozos[1]==NULL){
         printf("No key was entered\n");
         return -1;
     }
-    key =(key_t) strtoul(trozos[2],NULL,10);
+    key =(key_t) strtoul(trozos[1],NULL,10);
     if (key==IPC_PRIVATE){
       fprintf(stderr, "Error borrarkey: Invalid key\n");
       return -1;
@@ -440,7 +440,7 @@ int borrarkey(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
         perror("Error: shmctl in borrarkey");
         return -1;
     }
-    printf("Shared memory region of key %d removed",key); //Nada es eliminado??
+    printf("Shared memory region of key %d removed\n",key); //Nada es eliminado??
     return 0;
 }
 
@@ -482,15 +482,28 @@ int volcar(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
   if (trozos[2]!=NULL) cont = atoi(trozos[2]);
   addr = (const char *) strtoul(trozos[1],NULL,16);
 
-  char print[25];
+  unsigned char print[cont];
   for (int i = 0; i<cont; i+=25) {
     for (int j = 0; j < 25 && i+j < cont; j++) {
-      print[j] = isprint(*(addr+i+j)) ? *(addr+i+j) : ' ';
-      printf("  %c ",print[j]);
+      print[j] = (unsigned char) *(addr+i+j);
+      switch (print[j]){ //gestionar caracteres especiales
+        case 10:
+          printf(" LF "); //newline character
+          break;
+        case 13:
+          printf(" CR "); //carriage return (used in MS Windows)
+          break;
+        case 32:
+          printf(" SP "); //space character
+          break;
+        default:      
+          printf("  %c ",(isprint(*(addr+i+j)) ? *(addr+i+j) : ' '));
+          break;
+      }
     }
     printf("\n");
     for (int j = 0; j < 25 && i+j < cont; j++) {
-      printf(" %2x ",print[j]);
+      printf(" %2.2x ",print[j]);
     }
     printf("\n");
   }
