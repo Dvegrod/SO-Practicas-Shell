@@ -25,7 +25,5 @@ clean_obj:
 
 clean_all:
 	rm shell
-	rm listar
-	rm info
 	rm *.o
 	rm *.h.gch
