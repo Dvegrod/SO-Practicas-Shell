@@ -158,10 +158,6 @@ int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf
     if (trozos[2] == NULL)
       return showElem(ex_inf->memoria.lmalloc,SS_MALLOC);
     tam = atoi(trozos[2]);
-    if (tam==0){
-        //malloc(0) ??
-        return 0;
-    }
     tmp = malloc(tam);
     if (tmp==NULL){
         fprintf(stderr, "Error: Memory allocation failed\n");
@@ -348,7 +344,7 @@ int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_i
         perror("Error: munmap in desasignar -mmap");
         return -1;
     }
-    printf("Block at address %p deallocated (mmap)",e->dir);
+    printf("Block at address %p deallocated (mmap)\n",e->dir);
     //eliminar la entrada de la lista de archivos mapeados con mmap
     RemoveElement(&ex_inf->memoria.lmmap,e,freeMelem);
     return 0;
@@ -520,9 +516,11 @@ void recursive_fun(int n) {
   char array[2048];
   static char static_array[2048];
 
+  printf("\n");
   printf("Parameter n: %d en %p\n",n,&n);
   printf("Array in %p\n",array);
   printf("Static array in %p\n",static_array);
+  printf("\n");
 
   if(--n > 0) recursive_fun(n);
 }
@@ -574,7 +572,7 @@ int wfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   void* addr;
   int cont, fd;
   if (trozos[1] == NULL) {
-    fprintf(stderr, "Error wfich: no arguments (wfich [-o] file address cont)");
+    fprintf(stderr, "Error wfich: no arguments (wfich [-o] file address cont)\n");
     return -1;
   }
   if (!strcmp("-o",trozos[1])) overwrite=1;
