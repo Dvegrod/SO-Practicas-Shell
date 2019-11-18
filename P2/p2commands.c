@@ -237,7 +237,7 @@ int asignar_crear_shared(char const * trozos[], int ntrozos, struct extra_info *
     key = (key_t) strtoul(trozos[2],NULL,10);
     size = atoi(trozos[3]);
 
-    shared_id = shmget(key,size,IPC_CREAT|IPC_EXCL);
+    shared_id = shmget(key,size,IPC_CREAT|IPC_EXCL|0666);
     if (shared_id==-1){ //if shmget fails
         perror("Error: shmget in asignar -crearshared");
         return -1;
@@ -249,7 +249,9 @@ int asignar_crear_shared(char const * trozos[], int ntrozos, struct extra_info *
         return -1;
     }
     printf("Allocated shared memory (key %d) at %p\n",key,shm_ptr);
-    buildElem(size,shm_ptr,&ex_inf->memoria.lshmt,NULL);
+    int * keytoheap = malloc(sizeof(int));
+    *keytoheap = key;
+    buildElem(size,shm_ptr,&ex_inf->memoria.lshmt,keytoheap);
     return 0;
 }
 
@@ -261,7 +263,7 @@ int asignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_in
     }
     key = atoi(trozos[2]);
 
-    shared_id = shmget(key,0,0);
+    shared_id = shmget(key,0,0666);
     if (shared_id == -1){
         perror("Error: shmget in asignar -shared");
         return -1;
