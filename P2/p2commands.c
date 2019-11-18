@@ -433,8 +433,7 @@ int borrarkey(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
       printf("Error borrarkey: Invalid key\n");
       return -1;
     }
-    //PENDIENTE PREGUNTAR POR QUÉ LA FUNCIÓN DE EJEMPLO DEL ENUNCIADO LOS ARGUMENTOS DE SHMGET SON shmget(key,0,666)
-    shmid = shmget(key, 0, 0);
+    shmid = shmget(key, 0, 0666); //0666 da permisos de lectura+escritura a todos los usuarios
     if (shmid==-1){
         perror("Error: shmget in borrarkey");
         return -1;
