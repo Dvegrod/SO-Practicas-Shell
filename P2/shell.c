@@ -73,7 +73,7 @@ int processInput(char comando[], struct extra_info *ex_inf){
         {"asignar", asignar},
         {"desasignar", desasignar},
         {"borrarkey", borrarkey},
-        //{"mem", cmd_mem},
+        {"mem", cmd_mem},
         {"volcar", volcar},
         {"llenar", llenar},
         {"recursiva", recursiva},

@@ -119,7 +119,7 @@ void disposeTrilist(struct extra_info * ex_inf) {
   disposeAll(&ex_inf->memoria.lshmt,freeMelem);
 }
 
-//-------------------------------------------------------------------------
+//-Funciones-de-la-practica------------------------------------------------------
 
 int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
 int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
@@ -294,7 +294,11 @@ int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex
 
 
 int desasignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-    //Mapear opciones
+    //No args
+    if (trozos[1] == NULL) return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
+                             | showElem(ex_inf->memoria.lmmap,SS_MMAP)
+                             | showElem(ex_inf->memoria.lshmt,SS_SHM);
+    //Option selection:
 
     if (!strcmp(trozos[1],"-malloc")) {
       return desasignar_malloc(trozos,ntrozos,ex_inf);
@@ -309,7 +313,7 @@ int desasignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
       return desasignar_addr(trozos,ntrozos,ex_inf);
     }
     else{
-      //mostrar todas las direcciones mapeadas
+      printf("Error desasignar: illegal argument \"%s\" (-malloc,-mmap,-shared,-addr)\n",trozos[1]);
       return 0;
     }
 }
@@ -445,6 +449,33 @@ int borrarkey(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
     return 0;
 }
 
+////
+
+int cmd_mem(char const * trozos[], int ntrozos, struct extra_info * ex_inf) {
+  if (trozos[1] == NULL) {
+    int a,b,c;
+    static int d,e,f;
+    printf("Program functions' adresses: \n1: %p\n2: %p\n3: %p\n"
+           "Extern variables' adresses: \n1: %p\n2: %p\n3: %p\n"
+           "Automatic variables' adresses:\n1: %p\n2: %p\n3: %p\n",
+           asignar,cmd_mem,recursiva,&d,&e,&f,&a,&b,&c);
+    return 0;
+  }
+  else
+    if (!strcmp(trozos[1],"-malloc")) return showElem(ex_inf->memoria.lmalloc,SS_MALLOC);
+    else
+      if (!strcmp(trozos[1],"-mmap")) return showElem(ex_inf->memoria.lmmap,SS_MMAP);
+      else
+        if (!strcmp(trozos[1],"-shared")) return showElem(ex_inf->memoria.lshmt,SS_SHM);
+        else
+          if (!strcmp(trozos[1],"-all")) return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
+                                           | showElem(ex_inf->memoria.lmmap,SS_MMAP)
+                                           | showElem(ex_inf->memoria.lshmt,SS_SHM);
+  //Not a valid argument:
+  printf("Error mem: illegal argument \"%s\" (-malloc,-mmap,-shared)\n",trozos[1]);
+  return -1;
+}
+
 int volcar(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   int cont = 25;
   char const *addr;
@@ -545,6 +576,10 @@ int wfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   char overwrite = 0;
   void* addr;
   int cont, fd;
+  if (trozos[1] == NULL) {
+    printf("Error wfich: no arguments (wfich [-o] file address cont)");
+    return -1;
+  }
   if (!strcmp("-o",trozos[1])) overwrite=1;
   else
     if (trozos[1][0] == '-'){
