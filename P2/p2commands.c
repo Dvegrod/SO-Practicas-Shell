@@ -121,14 +121,14 @@ void disposeTrilist(struct extra_info * ex_inf) {
 
 //-Funciones-de-la-practica------------------------------------------------------
 
-int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
-int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
-int asignar_crear_shared(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
-int asignar_shared(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+int asignar_malloc(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
+int asignar_mmap(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
+int asignar_crear_shared(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
+int asignar_shared(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 
 
 
-int asignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+int asignar(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 
     if (trozos[1] == NULL) return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
                            | showElem(ex_inf->memoria.lmmap,SS_MMAP)
@@ -152,7 +152,7 @@ int asignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     }
 }
 
-int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+int asignar_malloc(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     int tam;
     void *tmp;
     if (trozos[2] == NULL)
@@ -168,13 +168,13 @@ int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf
     return 0;
 }
 
-int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+int asignar_mmap(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     unsigned int permisos_open = 0;
     unsigned int permisos_mmap = 0;
     struct stat statbuf;
     int fd = 0;
     void *file_ptr;
-    char const *path = trozos[2];
+    const char *path = trozos[2];
     if (path==NULL){
       //Lista direcciones de memoria asignadas con mmap
       return showElem(ex_inf->memoria.lmmap,SS_MMAP);
@@ -223,7 +223,7 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-int asignar_crear_shared(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+int asignar_crear_shared(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     key_t key = 0;
     int size = 0,shared_id = 0;
     void *shm_ptr;
@@ -251,7 +251,7 @@ int asignar_crear_shared(char const * trozos[], int ntrozos, struct extra_info *
     return 0;
 }
 
-int asignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+int asignar_shared(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
     int key = 0, shared_id = 0;
     void *shm_ptr;
     if (trozos[2]==NULL){ //no key is specified
@@ -283,13 +283,13 @@ int asignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_in
 
 ///////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////
-int desasignar_addr(char const * trozos[], int ntrozos, struct extra_info * ex_inf);
-int desasignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_inf);
-int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_inf);
-int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex_inf);
+int desasignar_addr(const char * trozos[], int ntrozos, struct extra_info * ex_inf);
+int desasignar_shared(const char * trozos[], int ntrozos, struct extra_info * ex_inf);
+int desasignar_mmap(const char * trozos[], int ntrozos, struct extra_info * ex_inf);
+int desasignar_malloc(const char * trozos[], int ntrozos, struct extra_info * ex_inf);
 
 
-int desasignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+int desasignar(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     //No args
     if (trozos[1] == NULL) return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
                              | showElem(ex_inf->memoria.lmmap,SS_MMAP)
@@ -305,16 +305,18 @@ int desasignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     if (!strcmp(trozos[1],"-shared")) {
       return desasignar_shared(trozos,ntrozos,ex_inf);
     }
-    if (!strcmp(trozos[1],"-addr")) {
-      return desasignar_addr(trozos,ntrozos,ex_inf);
-    }
     else{
-      fprintf(stderr, "Error desasignar: illegal argument \"%s\" (-malloc,-mmap,-shared,-addr)\n",trozos[1]);
-      return 0;
+      if (strtoul(trozos[1],NULL,16)==0){
+        fprintf(stderr, "Error desasignar: illegal argument \"%s\" (-malloc,-mmap,-shared, address)\n",trozos[1]);
+        return -1;
+      }
+      else{
+        desasignar_addr(trozos,ntrozos,ex_inf);
+      }
     }
 }
 
-int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+int desasignar_malloc(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
     unsigned long tam;
     if (trozos[2]==NULL){
       return showElem(ex_inf->memoria.lmalloc,SS_MALLOC);
@@ -333,8 +335,8 @@ int desasignar_malloc(char const * trozos[], int ntrozos, struct extra_info * ex
     return 0;
 }
 
-int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
-    char const *path = trozos[2];
+int desasignar_mmap(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
+    const char *path = trozos[2];
     if (trozos[2]==NULL){
       return showElem(ex_inf->memoria.lmmap,SS_MMAP);
     }
@@ -352,7 +354,7 @@ int desasignar_mmap(char const * trozos[], int ntrozos, struct extra_info * ex_i
     return 0;
 }
 
-int desasignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+int desasignar_shared(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
     int shmid = 0, key = 0;
     if (trozos[2]==NULL){
       return showElem(ex_inf->memoria.lshmt,SS_SHM);
@@ -379,13 +381,14 @@ int desasignar_shared(char const * trozos[], int ntrozos, struct extra_info * ex
     return 0;
 }
 
-int desasignar_addr(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
-    if (trozos[2]==NULL){
+int desasignar_addr(const char *trozos[],int ntrozos, struct extra_info * ex_inf){
+    /*if (trozos[2]==NULL){
       return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
         | showElem(ex_inf->memoria.lmmap,SS_MMAP)
         | showElem(ex_inf->memoria.lshmt,SS_SHM);
     }
-    void * addr = (void *) strtoul(trozos[2],NULL,16);
+    */
+    void * addr = (void *) strtoul(trozos[1],NULL,16);
     //buscar la dirección addr en la lista
     struct melem * e = NULL;
     searchElem(ex_inf->memoria.lmalloc,SS_ADDR,&e,addr);
@@ -396,20 +399,17 @@ int desasignar_addr(char const * trozos[], int ntrozos, struct extra_info * ex_i
         return 0;
     }
     searchElem(ex_inf->memoria.lmmap,SS_ADDR,&e,addr);
+    char *trozostmp[2];
     if (e != NULL){
         struct immap * others = e->others;
         //recuperar el path del fichero desde la lista
-        trozos[2] = others->filename;//path del fichero WHAT trozos dos cambia de direccion (produce no alcanzables? const?)
-        return desasignar_mmap(trozos,ntrozos,ex_inf);
+        trozostmp[2] = others->filename;//path del fichero
+        return desasignar_mmap((const char **) trozostmp,ntrozos,ex_inf);
     }
     searchElem(ex_inf->memoria.lshmt,SS_ADDR,&e,addr);
     if (e != NULL){
         int key = *(int *)e->others;
         //recuperar la clave compartida de la lista
-        char * trozostmp[3];;
-        for (int i = 0; i<2; i++){
-          trozostmp[i] = (char *) trozos[i];
-        }
         sprintf(trozostmp[2],"%d",key); //Lo mismo
         return desasignar_shared((const char **)trozostmp,ntrozos,ex_inf);
     }
@@ -419,7 +419,7 @@ int desasignar_addr(char const * trozos[], int ntrozos, struct extra_info * ex_i
       | showElem(ex_inf->memoria.lshmt,SS_SHM);
 }
 
-int borrarkey(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+int borrarkey(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
     int shmid = 0;
     key_t key = 0;
     if (trozos[2]==NULL){
@@ -446,7 +446,7 @@ int borrarkey(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
 
 ////
 
-int cmd_mem(char const * trozos[], int ntrozos, struct extra_info * ex_inf) {
+int cmd_mem(const char * trozos[], int ntrozos, struct extra_info * ex_inf) {
   if (trozos[1] == NULL) {
     int a,b,c;
     static int d,e,f;
@@ -471,16 +471,16 @@ int cmd_mem(char const * trozos[], int ntrozos, struct extra_info * ex_inf) {
   return -1;
 }
 
-int volcar(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+int volcar(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
   int cont = 25;
-  char const *addr;
+  const char *addr;
 
   if (trozos[1]==NULL){
     perror("Error volcar: Address not specified\n");
     return -1;
   }
   if (trozos[2]!=NULL) cont = atoi(trozos[2]);
-  addr = (char const *) strtoul(trozos[1],NULL,16);
+  addr = (const char *) strtoul(trozos[1],NULL,16);
 
   char print[25];
   for (int i = 0; i<cont; i+=25) {
@@ -497,7 +497,7 @@ int volcar(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   return 0;
 }
 
-int llenar(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+int llenar(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
   int cont = 128;
   char byte = 0x41;
   char* addr;
@@ -527,7 +527,7 @@ void recursive_fun(int n) {
   if(--n > 0) recursive_fun(n);
 }
 
-int recursiva(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+int recursiva(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
   if (trozos[1]==NULL){
     fprintf(stderr, "Error recursiva: No parameter specified\n");
     return -1;
@@ -537,7 +537,7 @@ int recursiva(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   return 0;
 }
 
-int rfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+int rfich(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
   void *addr;
   int cont = -1;
   struct stat statbuf;
@@ -569,7 +569,7 @@ int rfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
   return 0;
 }
 
-int wfich(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+int wfich(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
   char overwrite = 0;
   void* addr;
   int cont, fd;

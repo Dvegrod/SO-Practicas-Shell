@@ -52,9 +52,9 @@ char * ConvierteModo2 (mode_t m){
 // Funciones para las tareas de cada comando de la shell
 
 
-int reclisting(char const * path,unsigned int options,int reclevel);
+int reclisting(const char * path,unsigned int options,int reclevel);
 
-int createdir(char const *path){
+int createdir(const char *path){
   if (path == NULL){
     reclisting(".", 0,0);
     return 0;
@@ -79,7 +79,7 @@ int createdir(char const *path){
   }//else lists "."
 }
 
-int createfile(char const *path){
+int createfile(const char *path){
   int fd = open(path, O_CREAT | O_EXCL, S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH | S_IWOTH); //system call to create the file
   if (fd == -1){
       if (errno == EEXIST){ //file exists
@@ -100,7 +100,7 @@ int createfile(char const *path){
 
 }
 
-int crear(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+int crear(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   if (trozos[1]==NULL){ //if no file name is given
     reclisting(".", 0,0);
     return 0;
@@ -131,7 +131,7 @@ int crear(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
   }
 }
 
-int recdelete(char const * path) {
+int recdelete(const char * path) {
   struct stat statbuf;
   int intstat = lstat(path, &statbuf);
   if (!intstat){
@@ -166,7 +166,7 @@ int recdelete(char const * path) {
   return 0;
 }
 
-int borrar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+int borrar(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   if (trozos[1]==NULL){
     reclisting(".",0,0);
     return 0;
@@ -197,7 +197,7 @@ int borrar(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
   }
 }
 
-struct strfiledata * getInfo(char const *path){ //This function is a helper that gets all the stat info of a file and puts it in a struct "strfiledata"
+struct strfiledata * getInfo(const char *path){ //This function is a helper that gets all the stat info of a file and puts it in a struct "strfiledata"
   struct strfiledata * strfinfo = NULL; //Struct that will contain the file info formatted as "strings"
   struct stat finfo; //Data buffer for fstat
   //MALLOC
@@ -245,7 +245,7 @@ struct strfiledata * getInfo(char const *path){ //This function is a helper that
   return strfinfo;
 }
 
-int info(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+int info(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   for (int i = 1; i < ntrozos; i++) {
     struct strfiledata *  data = getInfo(trozos[i]);
     if (data == NULL) return -1;
@@ -258,7 +258,7 @@ int info(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
   return 0;
 }
 
-int reclisting(char const* path,unsigned int options,int reclevel) {
+int reclisting(const char* path,unsigned int options,int reclevel) {
   // EXTRACCION DE DATOS DEL FICHERO
   struct strfiledata *  data = getInfo(path);
   if (data == NULL) return -1;
@@ -317,7 +317,7 @@ int reclisting(char const* path,unsigned int options,int reclevel) {
   return 0;
 }
 
-int listar(char const * trozos[], int ntrozos, struct extra_info *ex_inf) {
+int listar(const char * trozos[], int ntrozos, struct extra_info *ex_inf) {
   unsigned int options = 0x0;
   int argstart = 1;
   for (int i = 1; i < ntrozos && i < 4; i++) {

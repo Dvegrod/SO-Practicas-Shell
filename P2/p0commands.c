@@ -9,8 +9,8 @@
 */
 
 
-int autores(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-    char const *opcion = trozos[1];
+int autores(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
+    const char *opcion = trozos[1];
     if (opcion == NULL){ //If there is no option
         printf("Carlos Torres Paz : carlos.torres\n");
         printf("Daniel Sergio Vega Rodríguez : d.s.vega\n");
@@ -35,8 +35,8 @@ int autores(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-int pid(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-    char const *opcion = trozos[1];
+int pid(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
+    const char *opcion = trozos[1];
     if (opcion==NULL)
     {
         printf("PID of Shell: %i\n", getpid());
@@ -55,8 +55,8 @@ int pid(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-int cdir(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-    char const *opcion = trozos[1];
+int cdir(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
+    const char *opcion = trozos[1];
     char buf[MAXLEN];
     if (opcion == NULL){
         errno = 0;
@@ -84,7 +84,7 @@ int cdir(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     }
 }
 
-int fecha(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+int fecha(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     time_t now; //time type variable
     if (time(&now)==-1){ //writes current time to NOW variable
         perror(strerror(errno));
@@ -95,7 +95,7 @@ int fecha(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-int hora(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
+int hora(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     time_t now; //time type variable
     if (time(&now)==-1){ //writes current time to NOW variable
         perror(strerror(errno)); //in case time() fails
@@ -110,8 +110,8 @@ int hora(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
-int hist(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
-  char const *opcion = trozos[1];
+int hist(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
+  const char *opcion = trozos[1];
   if (opcion != NULL) { //if there IS an option
     if (!strcmp(opcion,"-c")){ //if that option is "-c"
         disposeAll(first(&(ex_inf)->historial),free);

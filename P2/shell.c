@@ -35,7 +35,7 @@ int readInput(char comando[], struct extra_info * ex_inf){
     return 0;
 }
 
-int TrocearCadena(char * cadena, char const * trozos[]){
+int TrocearCadena(char * cadena, const char * trozos[]){
     int i=1;
     if ((trozos[0]=strtok(cadena," \n\t"))==NULL)
         return 0;
@@ -44,21 +44,21 @@ int TrocearCadena(char * cadena, char const * trozos[]){
     return i;
 }
 
-int salir(char const *trozos[], int ntrozos, struct extra_info *ex_inf){
+int salir(const char *trozos[], int ntrozos, struct extra_info *ex_inf){
   return SHELL_EXIT_SIGNAL;
 }
 
 //Función para decidir qué comando se va a ejecutar
 
 int processInput(char comando[], struct extra_info *ex_inf){
-    char const *trozos[MAX_N_ARG];
+    const char *trozos[MAX_N_ARG];
     int ntrozos = TrocearCadena(comando,trozos);
     int i = 0;
     int return_value = 0;
 
     struct {
         char * cmd_name;
-        int (* cmd_fun) (char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+        int (* cmd_fun) (const char * trozos[], int ntrozos, struct extra_info *ex_inf);
     } cmds[] = {
         {"autores", autores},
         {"pid", pid},
@@ -104,7 +104,7 @@ int processInput(char comando[], struct extra_info *ex_inf){
 }
 
 
-int main(int argc, char const *argv[]){
+int main(int argc, const char *argv[]){
     char comando[MAXLEN];
 
     struct extra_info * ex_inf;

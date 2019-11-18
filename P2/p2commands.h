@@ -4,23 +4,23 @@
     #include "exinf.h"
     #include "dynlist.h"
     
-    int asignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int asignar(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
     
-    int desasignar(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int desasignar(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
     
-    int borrarkey(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int borrarkey(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
     
-    int cmd_mem(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int cmd_mem(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
     
-    int volcar(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int volcar(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
     
-    int llenar(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int llenar(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
     
-    int recursiva(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int recursiva(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
     
-    int rfich(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int rfich(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
     
-    int wfich(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int wfich(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 //--------------------------------------------------------------------------------
     void disposeTrilist(struct extra_info *ex_inf);
 #endif

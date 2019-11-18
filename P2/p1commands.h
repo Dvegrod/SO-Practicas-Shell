@@ -12,12 +12,12 @@
     #include "./exinf.h"
 
 
-    int crear(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int crear(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 
-    int borrar(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int borrar(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 
-    int info(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int info(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 
-    int listar(char const * trozos[], int ntrozos, struct extra_info *ex_inf);
+    int listar(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 
 #endif
