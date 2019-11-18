@@ -175,13 +175,13 @@ int asignar_malloc(char const * trozos[], int ntrozos, struct extra_info *ex_inf
 int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     unsigned int permisos_open = 0;
     unsigned int permisos_mmap = 0;
-    struct stat * statbuf = malloc(sizeof(struct stat));
+    struct stat statbuf;
     int fd = 0;
     void *file_ptr;
     char const *path = trozos[2];
     if (path==NULL){
       //Lista direcciones de memoria asignadas con mmap
-      showElem(ex_inf->memoria.lmmap,SS_MMAP);
+      return showElem(ex_inf->memoria.lmmap,SS_MMAP);
     }
     //lee los permisos pasados por parámetro
     if (trozos[3]==NULL){
@@ -206,13 +206,12 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
         return -1;
     }
 
-    if (fstat(fd,statbuf)==-1){
-        free(statbuf);
+    if (fstat(fd,&statbuf)==-1){
         perror("Error: fstat in asignar -mmap");
         return -1;
     }
 
-    file_ptr = mmap(NULL,statbuf->st_size,permisos_mmap,MAP_PRIVATE,fd,0);
+    file_ptr = mmap(NULL,statbuf.st_size,permisos_mmap,MAP_PRIVATE,fd,0);
     if (file_ptr == MAP_FAILED){
         perror("Error: mmap in asignar -mmap");
         return -1;
@@ -224,8 +223,7 @@ int asignar_mmap(char const * trozos[], int ntrozos, struct extra_info *ex_inf){
     sprintf(ifile->filename,"%s",path);
     ifile->fd = fd;
     //Guarda la entrada en el historial de reservas de memoria
-    buildElem(statbuf->st_size,file_ptr,&ex_inf->memoria.lmmap,ifile);
-    free(statbuf); //Pendiente de revision
+    buildElem(statbuf.st_size,file_ptr,&ex_inf->memoria.lmmap,ifile);
     return 0;
 }
 
