@@ -355,7 +355,7 @@ int desasignar_mmap(const char * trozos[], int ntrozos, struct extra_info * ex_i
 }
 
 int desasignar_shared(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
-    int shmid = 0, key = 0;
+    int key = 0;
     if (trozos[2]==NULL){
       return showElem(ex_inf->memoria.lshmt,SS_SHM);
     }
@@ -367,13 +367,8 @@ int desasignar_shared(const char * trozos[], int ntrozos, struct extra_info * ex
       return showElem(ex_inf->memoria.lshmt,SS_SHM);
     }
     //recuperar de la lista la información de la clave (key) y la dirección (ptr)
-    shmid = shmget(*((int *) e->others), 0, 0);
-    if (shmid==-1){
-        perror("Error: shmget in desasignar -shared");
-        return -1;
-    }
-    if (shmctl(shmid,IPC_RMID,NULL)==-1){
-        perror("Error: shmctl in desasignar -shared");
+    if (shmdt(e->dir)==-1){
+        perror("Error: shmdt in desasignar -shared");
         return -1;
     }
     printf("Block at address %p deallocated (shared)\n",e->dir);
@@ -396,10 +391,11 @@ int desasignar_addr(const char *trozos[],int ntrozos, struct extra_info * ex_inf
         free(addr);
         printf("Block at address %p deallocated (malloc)\n",addr);
         //eliminar la entrada de la lista
+        RemoveElement(&ex_inf->memoria.lmalloc,e,freeMelem);
         return 0;
     }
     searchElem(ex_inf->memoria.lmmap,SS_ADDR,&e,addr);
-    char *trozostmp[2];
+    char *trozostmp[3];
     if (e != NULL){
         struct immap * others = e->others;
         //recuperar el path del fichero desde la lista
@@ -408,10 +404,8 @@ int desasignar_addr(const char *trozos[],int ntrozos, struct extra_info * ex_inf
     }
     searchElem(ex_inf->memoria.lshmt,SS_ADDR,&e,addr);
     if (e != NULL){
-        int key = *(int *)e->others;
-        //recuperar la clave compartida de la lista
-        sprintf(trozostmp[2],"%d",key); //Lo mismo
-        return desasignar_shared((const char **)trozostmp,ntrozos,ex_inf);
+        shmdt(e->dir);
+        RemoveElement(&ex_inf->memoria.lshmt,e,freeMelem);
     }
     //Not found
     return showElem(ex_inf->memoria.lmalloc,SS_MALLOC)
@@ -496,7 +490,7 @@ int volcar(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
         case 32:
           printf(" SP "); //space character
           break;
-        default:      
+        default:
           printf("  %c ",(isprint(*(addr+i+j)) ? *(addr+i+j) : ' '));
           break;
       }
@@ -509,7 +503,33 @@ int volcar(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
   }
   return 0;
 }
+/*
+int volcar(char const * trozos[], int ntrozos, struct extra_info * ex_inf){
+  int cont = 25;
+  char const *addr;
 
+  if (trozos[1]==NULL){
+    perror("Error volcar: Address not specified\n");
+    return -1;
+  }
+  if (trozos[2]!=NULL) cont = atoi(trozos[2]);
+  addr = (char const *) strtoul(trozos[1],NULL,16);
+
+  char print[25];
+  for (int i = 0; i<cont; i+=25) {
+    for (int j = 0; j < 25 && i+j < cont; j++) {
+      print[j] = isprint(*(addr+i+j)) ? *(addr+i+j) : ' ';
+      printf("  %c ",print[j]);
+    }
+    printf("\n");
+    for (int j = 0; j < 25 && i+j < cont; j++) {
+      printf(" %2.2x ",(unsigned char)*(addr+i+j));
+    }
+    printf("\n");
+  }
+  return 0;
+}
+*/
 int llenar(const char * trozos[], int ntrozos, struct extra_info * ex_inf){
   int cont = 128;
   char byte = 0x41;
