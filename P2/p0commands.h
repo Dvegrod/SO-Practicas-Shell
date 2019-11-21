@@ -24,4 +24,7 @@
     
     int hist(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 
+/*---------------------------------------------------------------------------*/
+int Free(void * e);
+
 #endif

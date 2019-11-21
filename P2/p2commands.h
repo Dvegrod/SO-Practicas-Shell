@@ -22,5 +22,5 @@
     
     int wfich(const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 //--------------------------------------------------------------------------------
-    void disposeTrilist(struct extra_info *ex_inf);
+    void disposeMemory(struct extra_info *ex_inf);
 #endif

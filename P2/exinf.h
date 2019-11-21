@@ -27,15 +27,10 @@
   #include "dynlist.h"
   #define MAXLEN 1024 //maximum length of strings (arrays of 1024 chars)
 
-struct trilist {
-  lista lmalloc;
-  lista lmmap;
-  lista lshmt;
-};
 
 struct extra_info{
   lista historial;
-  struct trilist memoria;
+  lista memoria;
 };
 
 #endif

@@ -110,11 +110,16 @@ int hora(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     return 0;
 }
 
+int Free(void * e) {
+  free(e);
+  return 0;
+}
+
 int hist(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   const char *opcion = trozos[1];
   if (opcion != NULL) { //if there IS an option
     if (!strcmp(opcion,"-c")){ //if that option is "-c"
-        disposeAll(first(&(ex_inf)->historial),free);
+        disposeAll(first(&(ex_inf)->historial),Free);
         printf("Cleared command history\n");
     }
     else

@@ -18,11 +18,11 @@
   
   void InsertElement(lista *last, void *element);
   
-  int RemoveElementAt(lista *plist, iterator position, void (*freeE)(void *));
+  int RemoveElementAt(lista *plist, iterator position, int (*freeE)(void *));
 
-  int RemoveElement(lista *plist, void * elem, void (*freeE)(void *));
+int RemoveElement(lista *plist, void * elem, int (*freeE)(void *));
 
-  void disposeAll(lista * ptolist, void (*freeE)(void *));
+int disposeAll(lista * ptolist, int (*freeE)(void *));
 
   int isEmptyList(lista l);
 
