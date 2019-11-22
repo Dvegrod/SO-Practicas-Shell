@@ -262,7 +262,7 @@ int reclisting(const char* path,unsigned int options,int reclevel) {
   // EXTRACCION DE DATOS DEL FICHERO
   struct strfiledata *  data = getInfo(path);
   if (data == NULL) return -1;
-  if (options & 0x4 && (data->name[0] == '.')) return 0; // -v -> 0x4
+  if (options & 0x4 && (data->name[0] == '.')) {free(data);return 0;} // -v -> 0x4
   // FORMATO PARA LISTADO RECURSIVO
   char indent[reclevel + 1];
   char indentchar = '-';
