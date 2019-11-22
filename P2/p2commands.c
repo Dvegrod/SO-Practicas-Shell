@@ -24,7 +24,7 @@ struct immap {
   int fd;
 };
 
-
+//Constructs a new element and then inserts it into the polymorphic list
 int buildElem(int mapf,unsigned long tam, void * where, iterator list, void * ex) {
   struct melem * new = malloc(sizeof(struct melem));
   //Error
@@ -48,6 +48,7 @@ int buildElem(int mapf,unsigned long tam, void * where, iterator list, void * ex
   return 0;
 }
 
+//Prints all elements that match the requested flag (each flag corresponds to a mapping function)
 int showElem(lista list, int flag) {
   struct melem * elem;
   for (iterator i = first(&list); !isLast(i); i = next(i)) {
@@ -76,6 +77,8 @@ int showElem(lista list, int flag) {
   return 0;
 }
 
+//Looks for an element by the atribute that corresponds to the requested flag
+//having this element the same mapping function that the flag specifies
 int searchElem(lista list, int flag, struct melem ** e, void * id) {
   *e = NULL;
   struct melem * elem;
@@ -116,6 +119,9 @@ int searchElem(lista list, int flag, struct melem ** e, void * id) {
   return 0;
 }
 
+//Frees the memory mapped referenced by the element using the corresponding call
+//Also frees the memory used to store the element
+//This function is given by parameter to the polymorphic list ADT for a clean removal of elements from the list
 int freeMelem(void * elem) {
   struct melem * e = elem;
   switch (e->mapfunc) {
@@ -175,7 +181,7 @@ int asignar(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
       return asignar_shared(trozos,ntrozos,ex_inf);
     }
     else{
-      //Mostrar todas las direcciones mapeadas
+      showElem(ex_inf->memoria,SS_ALL);
       return 0;
     }
 }
@@ -333,8 +339,10 @@ int desasignar(const char * trozos[], int ntrozos, struct extra_info *ex_inf){
       return desasignar_shared(trozos,ntrozos,ex_inf);
     }
     else{
-      if (strtoul(trozos[1],NULL,16)==0){
-        fprintf(stderr, "Error desasignar: illegal argument \"%s\" (-malloc,-mmap,-shared, address)\n",trozos[1]);
+      char * endptr;
+      strtoul(trozos[1],&endptr,16);
+      if (*endptr != '\0'){
+        fprintf(stderr, "Error desasignar: illegal argument \"%s\" (-malloc,-mmap,-shared, address([0x]HEXVALUE))\n",trozos[1]);
         return -1;
       }
       else{
@@ -395,12 +403,6 @@ int desasignar_shared(const char * trozos[], int ntrozos, struct extra_info * ex
 }
 
 int desasignar_addr(const char *trozos[],int ntrozos, struct extra_info * ex_inf){
-    /*if (trozos[2]==NULL){
-      return showElem(ex_inf->memoria,SS_MALLOC)
-        | showElem(ex_inf->memoria,SS_MMAP)
-        | showElem(ex_inf->memoria,SS_SHM);
-    }
-    */
     void * addr = (void *) strtoul(trozos[1],NULL,16);
     //buscar la dirección addr en la lista
     struct melem * e = NULL;
