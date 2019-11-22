@@ -124,29 +124,34 @@ int searchElem(lista list, int flag, struct melem ** e, void * id) {
 //This function is given by parameter to the polymorphic list ADT for a clean removal of elements from the list
 int freeMelem(void * elem) {
   struct melem * e = elem;
+  char func[7];
   switch (e->mapfunc) {
   case SS_MALLOC: {
+    sprintf(func,"malloc");
     free(e->dir);
     break;
   }
   case SS_MMAP: {
     if (munmap(e->dir,e->size)==-1){
-      perror("Error: munmap in desasignar -mmap");
+      perror("Error: munmap at memory freeing");
       return -1;
     }
+    sprintf(func,"mmap");
     free(e->others);
     break;
   }
   case SS_SHM: {
     if (shmdt(e->dir)==-1){
-      perror("Error: shmdt in desasignar -shared");
+      perror("Error: shmdt at memory freeing");
       return -1;
     }
+    sprintf(func,"shared");
     free(e->others);
     break;
   }
   default: return -1;
   }
+  printf("Block at address %p deallocated (%s)\n",e->dir,func);
   free(elem);
   return 0;
 }
@@ -364,7 +369,6 @@ int desasignar_malloc(const char * trozos[], int ntrozos, struct extra_info * ex
     if (e == NULL){
       return showElem(ex_inf->memoria,SS_MALLOC);
     }
-    printf("Block at address %p deallocated (malloc)\n",(void *) e->dir);
     RemoveElement(&ex_inf->memoria,e,freeMelem);
     return 0;
 }
@@ -377,8 +381,6 @@ int desasignar_mmap(const char * trozos[], int ntrozos, struct extra_info * ex_i
     //buscar fichero fich en la lista de ficheros mapeados a memoria, sacar también el puntero a la direccion fileptr
     struct melem * e = NULL;
     searchElem(ex_inf->memoria,SS_MMAP,&e,(void *) path);//PENDIENTE CONST VOID
-    //
-    printf("Block at address %p deallocated (mmap)\n",e->dir);
     //eliminar la entrada de la lista de archivos mapeados con mmap
     RemoveElement(&ex_inf->memoria,e,freeMelem);
     return 0;
@@ -397,7 +399,6 @@ int desasignar_shared(const char * trozos[], int ntrozos, struct extra_info * ex
       return showElem(ex_inf->memoria,SS_SHM);
     }
     //recuperar de la lista la información de la clave (key) y la dirección (ptr)
-    printf("Block at address %p deallocated (shared)\n",e->dir);
     RemoveElement(&ex_inf->memoria,e,freeMelem);
     return 0;
 }
@@ -407,23 +408,8 @@ int desasignar_addr(const char *trozos[],int ntrozos, struct extra_info * ex_inf
     //buscar la dirección addr en la lista
     struct melem * e = NULL;
     searchElem(ex_inf->memoria,SS_ALL,&e,addr);
-    if (e != NULL){
-        printf("Block at address %p deallocated (malloc)\n",addr);
-        //eliminar la entrada de la lista
-        RemoveElement(&ex_inf->memoria,e,freeMelem);
-        return 0;
-    }
-    searchElem(ex_inf->memoria,SS_ALL,&e,addr);
-    char *trozostmp[3];
-    if (e != NULL){
-        struct immap * others = e->others;
-        //recuperar el path del fichero desde la lista
-        trozostmp[2] = others->filename;//path del fichero
-        return desasignar_mmap((const char **) trozostmp,ntrozos,ex_inf);
-    }
-    searchElem(ex_inf->memoria,SS_ALL,&e,addr);
-    if (e != NULL){
-        RemoveElement(&ex_inf->memoria,e,freeMelem);
+    if (e != NULL) {
+      RemoveElement(&ex_inf->memoria,e,freeMelem);
     }
     //Not found
     return showElem(ex_inf->memoria,SS_MALLOC)
