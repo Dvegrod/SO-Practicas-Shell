@@ -31,6 +31,7 @@
 struct extra_info{
   lista historial;
   lista memoria;
+  lista procesos;
 };
 
 #endif
