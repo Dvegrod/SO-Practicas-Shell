@@ -121,14 +121,18 @@ int main(int argc, const char *argv[]){
 
     ex_inf->historial = CreateList();
     ex_inf->memoria = CreateList();
+    ex_inf->procesos = CreateList();
+
 
     do{
         printPrompt();
         readInput(comando, ex_inf);
     } while(processInput(comando, ex_inf) != SHELL_EXIT_SIGNAL);
 
+
     disposeAll(&ex_inf->historial,Free); //cleans up and exits
     disposeMemory(ex_inf);
+    disposeAll(&ex_inf->procesos,Free/*>:D*/);
     free(ex_inf);
     return EXIT_SUCCESS;
 }
