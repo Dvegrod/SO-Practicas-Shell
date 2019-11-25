@@ -3,8 +3,9 @@
 #include "p0commands.h"
 #include "p1commands.h"
 #include "p2commands.h"
+#include "p3commands.h"
 #define MAX_N_ARG 32 //maximum number of arguments to a shell command
-#define SHELL_EXIT_SIGNAL 2
+#define SHELL_EXIT_SIGNAL 0
 
 /*
   Sistemas Operativos
@@ -79,6 +80,14 @@ int processInput(char comando[], struct extra_info *ex_inf){
         {"recursiva", recursiva},
         {"rfich", rfich},
         {"wfich", wfich},
+        {"priority", priority},
+        {"fork",cmdfork},
+        {"exec",cmdexec},
+        {"pplano",pplano},
+        {"splano",splano},
+        {"listarprocs", listarprocs},
+        {"proc",cmdproc},
+        {"borrarprocs",borrarprocs},
         {"fin", salir},
         {"end", salir},
         {"exit", salir},
@@ -97,8 +106,8 @@ int processInput(char comando[], struct extra_info *ex_inf){
         } //if
     } //for
     if (cmds[i].cmd_name == NULL){ //cmd not found
-        printf(" %s : unrecognised command\n", trozos[0]);
-        return -1;
+      //if command name was not found, will try to run it as an executable
+      return_value = cmdexec((const char **) trozos-sizeof(char *), ntrozos, ex_inf);
     } //cmd not found
     return return_value;
 }

@@ -1,8 +1,8 @@
 CC=gcc
 CFLAGS=-Wall -g
 
-shell: shell.c dynlist.o p0commands.o p1commands.o p2commands.o exinf.h
-	$(CC) -o shell shell.c dynlist.o p0commands.o p1commands.o p2commands.o $(CFLAGS)
+shell: shell.c dynlist.o p0commands.o p1commands.o p2commands.o p3commands.o exinf.h
+	$(CC) -o shell shell.c dynlist.o p0commands.o p1commands.o p2commands.o p3commands.o $(CFLAGS)
 
 dynlist.o: dynlist.c dynlist.h exinf.h
 	$(CC) -c dynlist.c $(CFLAGS)
@@ -16,14 +16,12 @@ p1commands.o: p1commands.c p1commands.h exinf.h
 p2commands.o: p2commands.c p2commands.h exinf.h
 	$(CC) -c p2commands.c $(CFLAGS)
 
-clean:
-	rm *.h.gch
+p3commands.o: p3commands.c p3commands.h exinf.h
+	$(CC) -c p3commands.c $(CFLAGS)
 
-clean_obj:
+clean:
 	rm *.o
-	rm *.h.gch
 
 clean_all:
 	rm shell
 	rm *.o
-	rm *.h.gch
