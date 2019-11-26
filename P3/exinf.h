@@ -17,6 +17,8 @@
   #include <sys/mman.h>
   #include <sys/ipc.h>
   #include <sys/shm.h>
+  #include <sys/resource.h>
+  #include <sys/wait.h>
   #include <dirent.h>
   #include <fcntl.h>
   #include <unistd.h>
