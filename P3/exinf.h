@@ -28,7 +28,7 @@
   #include <ctype.h>
   #include "dynlist.h"
   #define MAXLEN 1024 //maximum length of strings (arrays of 1024 chars)
-
+  #define MAX_N_ARG 32 //maximum number of arguments to a shell command
 
 struct extra_info{
   lista historial;

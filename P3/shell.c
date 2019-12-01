@@ -4,7 +4,6 @@
 #include "p1commands.h"
 #include "p2commands.h"
 #include "p3commands.h"
-#define MAX_N_ARG 32 //maximum number of arguments to a shell command
 #define SHELL_EXIT_SIGNAL 0
 
 /*
