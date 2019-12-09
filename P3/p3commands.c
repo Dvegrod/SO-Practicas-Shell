@@ -1,5 +1,7 @@
 #include "p3commands.h"
 
+
+
 struct pelem {
   pid_t pid;
   int status;
@@ -33,8 +35,8 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   return 0;
 };
 
-int showElem(iterator ilist) {
-  for (iterator i = first(ilist); !isLast(i); i = next(i)) {
+int showPElem(lista * list) {
+  for (iterator i = first(list); !isLast(i); i = next(i)) {
     struct pelem * e = getElement(i);
     //signal or value of return
     char sigorval[20];
@@ -49,6 +51,18 @@ int showElem(iterator ilist) {
   };
   return 0;
 }
+
+int searchPElem(lista * list,pid_t pid,struct pelem ** pointer) {
+  pointer = NULL;
+  for (iterator i = first(list); !isLast(i); i = next(i)) {
+    struct pelem * elem = getElement(i);
+    if (elem->pid == pid) {
+      *pointer = elem;
+      return 0;
+    }
+  }
+  return 1; //Not found
+};
 
 int freePElem(void * elem) {
   struct pelem * e = elem;
@@ -90,6 +104,7 @@ int cmdfork (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   }
   if (pidhijo!=0){
     waitpid(pidhijo,NULL,0); //padre
+    return 0;
   }
   else{
     return 0; //hijo
@@ -127,7 +142,7 @@ int spfork() {
     return -1;
   }
   if (pidhijo!=0){
-    return 1; //padre
+    return pidhijo; //padre
   }
   else{
     return 0; //hijo
@@ -135,19 +150,20 @@ int spfork() {
 }
 
 int splano (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
-  switch (spfork()) {
-    case -1 : return -1;
-    case 1  : return 0;
-    case 0  : {
-      //Incompleto
-      cmdexec(trozos,ntrozos,NULL);
+  int pidhijo;
+  switch (pidhijo = spfork()) {
+    case -1 : return -1; //Caso error
+    case 0  : { //Codigo del hijo
+      return cmdexec(trozos,ntrozos,NULL);
+    }
+    default : { //Codigo del padre
+      return buildPElem(&ex_inf->procesos,pidhijo,trozos,ntrozos);
     }
   }
-  return -1;
 }
 
 int listarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
-  return 0;
+  return showElem(&ex_inf->procesos);
 }
 
 int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
