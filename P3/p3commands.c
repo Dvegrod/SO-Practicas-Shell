@@ -3,10 +3,12 @@
 struct pelem {
   pid_t pid;
   int status;
-  time_t time;
-  const char ** cmd;
+  struct tm * time;
+  char ** cmd;
+  int nargs;
   int * sigorval;
 };
+
 //ESTO ES SUSCEPTIBLE A CAMBIOS
 
 int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
@@ -14,24 +16,47 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   elem->pid = pid;
   elem->status = 1;
   //TIME
-  ctime(&elem->time);
+  time_t epch;
+  ctime(&epch);
+  elem->time = localtime(&epch); //Atentos al valgrind
   //CMD
-  const char ** copytrozos = malloc(sizeof(char *) * n);
-  for (int j = 0; j < n; j++) copytrozos[j] = trozos[j]; //PELIGRO
+  char ** copytrozos = malloc(sizeof(char *) * n);
+  for (int j = 0; j < n; j++) {
+    copytrozos[j] = malloc(sizeof(char) * strlen(trozos[j]));
+    strncpy(copytrozos[j],trozos[j],MAXLEN);
+  }
+  elem->nargs = n;
   elem->cmd = copytrozos;;
-  //SIGNAL OR VALUE
+  //SIGNAL OR VALUE PENDIENTE
   elem->sigorval = NULL;;
   InsertElement(list,elem);
   return 0;
 };
 
-int showElem(iterator list) {
-  for (iterator i = first(&list); !isLast(i); i = next(i));
+int showElem(iterator ilist) {
+  for (iterator i = first(ilist); !isLast(i); i = next(i)) {
+    struct pelem * e = getElement(i);
+    //signal or value of return
+    char sigorval[20];
+    sprintf(sigorval, e->sigorval == NULL ? "" : "Signal or value: %i",*e->sigorval);
+    //time
+    char date[20];
+    strftime(date,20,"%a %b %d %T %Y",e->time); //STATUS?
+    printf(" Pid: %5i Status: %i Started: %s %s Command: ",
+           e->pid,e->status,date,sigorval);
+    for (int j = 0; j < e->nargs; j++) printf("%s ",e->cmd[j]);
+    printf("\n");
+  };
+  return 0;
 }
 
 int freePElem(void * elem) {
-  free(((struct pelem *) elem)->sigorval);
+  struct pelem * e = elem;
+  for (int i = 0; i < e->nargs; i++) free(e->cmd[i]);
+  free(e->cmd);
+  free(e->sigorval);
   free(elem);
+  return 0;
 }
 
 
