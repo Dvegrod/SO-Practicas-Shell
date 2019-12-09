@@ -171,5 +171,24 @@ int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
-  return 0;
+  if (!strcmp(trozos[1],"-term")){
+    //mostrar procesos hijos que terminaron normalmente
+    for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
+      ;
+    }
+  }
+  else if(!strcmp(trozos[1],"-sig")){
+    //mostrar procesos hijos que terminaron por señal
+    for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
+      int status;
+      int wpid =
+        waitpid(getElement(i)->pid,&status,WNOHANG | WUNTRACED | WCONTINUED);
+      if (wpid > 0){
+        
+      }
+    }
+  }
+  else{
+    fprintf(stderr, "Error: invalid argument to borraprocs");
+  }
 }
