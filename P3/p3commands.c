@@ -1,5 +1,9 @@
 #include "p3commands.h"
-
+#define TRUE_TO_ONE(x) (x) ? 1 : 0
+#define PRUNNING 0
+#define PSTOPPED 1
+#define PTERM    2
+#define PSIGN    4
 
 
 struct pelem {
@@ -16,7 +20,7 @@ struct pelem {
 int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   struct pelem * elem = malloc(sizeof(struct pelem));
   elem->pid = pid;
-  elem->status = 1;
+  elem->status = PRUNNING;
   //TIME
   time_t epch;
   ctime(&epch);
@@ -35,25 +39,32 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   return 0;
 };
 
-int showPElem(lista * list) {
-  for (iterator i = first(list); !isLast(i); i = next(i)) {
-    struct pelem * e = getElement(i);
-    //signal or value of return
-    char sigorval[20];
-    sprintf(sigorval, e->sigorval == NULL ? "" : "Signal or value: %i",*e->sigorval);
-    //time
-    char date[20];
-    strftime(date,20,"%a %b %d %T %Y",e->time); //STATUS?
-    printf(" Pid: %5i Status: %i Started: %s %s Command: ",
-           e->pid,e->status,date,sigorval);
-    for (int j = 0; j < e->nargs; j++) printf("%s ",e->cmd[j]);
-    printf("\n");
-  };
+int showPElem(struct pelem * e) {
+  //Status
+  int status;
+  int wpid = waitpid(e->pid,&status,WNOHANG | WUNTRACED | WCONTINUED);
+  if (wpid == e->pid) {
+    e->status = (TRUE_TO_ONE(WIFSIGNALED(status) << 2)) || TRUE_TO_ONE((WIFEXITED(status) << 1)) || TRUE_TO_ONE((WIFSTOPPED(status)));
+    if (e->status & PSTERM) {}
+  }
+  else {
+    status = e->status;
+  }
+  //signal or value of return
+  char sigorval[20];
+  sprintf(sigorval, e->sigorval == NULL ? "" : "Signal or value: %i",*e->sigorval);
+  //time
+  char date[20];
+  strftime(date,20,"%a %b %d %T %Y",e->time); //STATUS?
+  printf(" Pid: %5i Status: %i Started: %s %s Command: ",
+         e->pid,e->status,date,sigorval);
+  for (int j = 0; j < e->nargs; j++) printf("%s ",e->cmd[j]);
+  printf("\n");
   return 0;
 }
 
 int searchPElem(lista * list,pid_t pid,struct pelem ** pointer) {
-  pointer = NULL;
+  *pointer = NULL;
   for (iterator i = first(list); !isLast(i); i = next(i)) {
     struct pelem * elem = getElement(i);
     if (elem->pid == pid) {
@@ -163,11 +174,20 @@ int splano (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int listarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
-  return showElem(&ex_inf->procesos);
+  for (iterator i = first(&ex_inf->procesos); !isLast(i); i = next(i)) showPElem(getElement(i));
+  return 0;
 }
 
 int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
-  return 0;
+  if (ntrozos < 2) {
+    return listarprocs(NULL,0,NULL);
+  }
+  else {
+    pid_t pid = atoi(trozos[1]);
+    struct pelem * elem;
+    searchPElem(&ex_inf->procesos,pid,&elem);
+    return showPElem(elem);
+  }
 }
 
 int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
