@@ -39,20 +39,41 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   return 0;
 };
 
-int showPElem(struct pelem * e) {
-  //Status
+int statusUpdate(struct pelem * e) {
   int status;
   int wpid = waitpid(e->pid,&status,WNOHANG | WUNTRACED | WCONTINUED);
   if (wpid == e->pid) {
-    e->status = (TRUE_TO_ONE(WIFSIGNALED(status) << 2)) || TRUE_TO_ONE((WIFEXITED(status) << 1)) || TRUE_TO_ONE((WIFSTOPPED(status)));
-    if (e->status & PSTERM) {}
+    e->status = (TRUE_TO_ONE(WIFSIGNALED(status)) << 2)
+               |(TRUE_TO_ONE(WIFEXITED(status))   << 1)
+               |(TRUE_TO_ONE(WIFSTOPPED(status)));
+    if (e->sigorval == NULL) e->sigorval = malloc(sizeof(int));
+
+    switch (e->status) {
+      case PTERM : {
+        *e->sigorval = WEXITSTATUS(status);
+        break;
+      }
+      case PSIGN : {
+        *e->sigorval = WTERMSIG(status);
+        break;
+      }
+      case PSTOPPED : {
+        *e->sigorval = WSTOPSIG(status);
+       break;
+      }
+    }
   }
-  else {
-    status = e->status;
-  }
+  status = e->status;
+  return status;
+}
+
+int showPElem(struct pelem * e) {
+  //Status
+  statusUpdate(e);
   //signal or value of return
   char sigorval[20];
-  sprintf(sigorval, e->sigorval == NULL ? "" : "Signal or value: %i",*e->sigorval);
+  char * format = (e->status & PRUNNING) ? "\0" : (e->status & (PSTOPPED | PSIGN) ? "Signal: %i" : "Value: %i");
+  sprintf(sigorval,format,*e->sigorval);
   //time
   char date[20];
   strftime(date,20,"%a %b %d %T %Y",e->time); //STATUS?
@@ -132,7 +153,7 @@ int cmdexec (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     const char * trzs[] = {NULL,pidt,&trozos[1][1]};
     priority(trzs,3,ex_inf);
   }
-  execvp(trozos[1],&trozos[2]);//ojo al tipo del segundo arg
+  execvp(trozos[1],(char * const *)&trozos[2]);//ojo al tipo del segundo arg
   perror("Error: exec failed");
   return -1;
 }
@@ -200,15 +221,13 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   else if(!strcmp(trozos[1],"-sig")){
     //mostrar procesos hijos que terminaron por señal
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
-      int status;
-      int wpid =
-        waitpid(getElement(i)->pid,&status,WNOHANG | WUNTRACED | WCONTINUED);
-      if (wpid > 0){
-        
-      }
+      struct pelem * e = getElement(i);
+      statusUpdate(e);
+      if (e->status & PSIGN) showPElem(e);
     }
   }
   else{
     fprintf(stderr, "Error: invalid argument to borraprocs");
   }
+  return 0;
 }
