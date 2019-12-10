@@ -220,7 +220,9 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   if (!strcmp(trozos[1],"-term")){
     //mostrar procesos hijos que terminaron normalmente
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
-      ;
+      struct pelem * e = getElement(i);
+      statusUpdate(e);
+      if (e->status & PTERM) showPElem(e);
     }
   }
   else if(!strcmp(trozos[1],"-sig")){

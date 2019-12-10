@@ -45,7 +45,7 @@ int TrocearCadena(char * cadena, const char * trozos[]){
 }
 
 int salir(const char *trozos[], int ntrozos, struct extra_info *ex_inf){
-  return SHELL_EXIT_SIGNAL;
+  return SHELL_EXIT_SIGNAL; //returns an exit signal that tells main() to clean up and exit
 }
 
 //Función para decidir qué comando se va a ejecutar
@@ -96,7 +96,7 @@ int processInput(char comando[], struct extra_info *ex_inf){
     if (trozos[0]==NULL){ //in case nothing is entered
         return 0;
     }
-    
+
     for (i = 0; cmds[i].cmd_name != NULL; i++)
     {
         if (!strcmp(trozos[0],cmds[i].cmd_name)){
@@ -106,7 +106,7 @@ int processInput(char comando[], struct extra_info *ex_inf){
     } //for
     if (cmds[i].cmd_name == NULL){ //cmd not found
       //if command name was not found, will try to run it as an executable
-      return_value = cmdexec((const char **) trozos-sizeof(char *), ntrozos, ex_inf);
+      return_value = cmdexec((const char **) (trozos-sizeof(char *)), ntrozos, ex_inf);
     } //cmd not found
     return return_value;
 }
@@ -131,7 +131,7 @@ int main(int argc, const char *argv[]){
 
     disposeAll(&ex_inf->historial,Free); //cleans up and exits
     disposeMemory(ex_inf);
-    disposeAll(&ex_inf->procesos,Free/*>:D*/);
+    disposeAll(&ex_inf->procesos,Free);
     free(ex_inf);
     return EXIT_SUCCESS;
 }
