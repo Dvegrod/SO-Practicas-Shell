@@ -48,6 +48,8 @@ int salir(const char *trozos[], int ntrozos, struct extra_info *ex_inf){
   return SHELL_EXIT_SIGNAL; //returns an exit signal that tells main() to clean up and exit
 }
 
+int direct_cmd(const char *trozos[], int ntrozos, struct extra_info *ex_inf);
+
 //Función para decidir qué comando se va a ejecutar
 
 int processInput(char comando[], struct extra_info *ex_inf){
@@ -106,7 +108,7 @@ int processInput(char comando[], struct extra_info *ex_inf){
     } //for
     if (cmds[i].cmd_name == NULL){ //cmd not found
       //if command name was not found, will try to run it as an executable
-      return_value = cmdexec((const char **) (trozos-sizeof(char *)), ntrozos, ex_inf);
+      return_value = direct_cmd(trozos, ntrozos, ex_inf);
     } //cmd not found
     return return_value;
 }

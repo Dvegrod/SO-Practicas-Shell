@@ -5,7 +5,6 @@
 #define PTERM    2
 #define PSIGN    4
 
-
 struct pelem {
   pid_t pid;
   int status;
@@ -14,6 +13,16 @@ struct pelem {
   int nargs;
   int * sigorval;
 };
+
+char* strstatus(int status){
+  switch (status){
+  case PRUNNING: return "Running";
+  case PSTOPPED: return "Stopped";
+  case PTERM : return "Terminated normally";
+  case PSIGN : return "Terminated by signal";
+  default : return "Undefined";
+  }
+}
 
 //ESTO ES SUSCEPTIBLE A CAMBIOS
 
@@ -40,6 +49,7 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
 };
 
 int statusUpdate(struct pelem * e) {
+  //PROBLEMA: El status siempre sale o running o stopped. Aunque el proceso haya acabado sigue saliendo STOPPED
   int status;
   int wpid = waitpid(e->pid,&status,WNOHANG | WUNTRACED | WCONTINUED);
   if (wpid == e->pid) {
@@ -68,6 +78,7 @@ int statusUpdate(struct pelem * e) {
 }
 
 int showPElem(struct pelem * e) {
+  //PROBLEMA: El started time siempre sale el 1 de enero de 1970 a medianoche (EPOCH 000000)...
   //Status
   statusUpdate(e);
   //signal or value of return
@@ -78,12 +89,12 @@ int showPElem(struct pelem * e) {
     if (e->status & PTERM)
       sprintf(sigorval,"Value: %i",*e->sigorval);
     else
-      sprintf(sigorval,"");
+      sprintf(sigorval," ");
   //time
   char date[20];
   strftime(date,20,"%a %b %d %T %Y",e->time); //STATUS?
-  printf(" Pid: %5i Status: %i Started: %s %s Command: ",
-         e->pid,e->status,date,sigorval);
+  printf(" Pid: %5i | Status: %s | Started: %s %s | Command: ",
+         e->pid,strstatus(e->status),date,sigorval);
   for (int j = 0; j < e->nargs; j++) printf("%s ",e->cmd[j]);
   printf("\n");
   return 0;
@@ -133,6 +144,13 @@ int priority (const char * trozos[], int ntrozos, struct extra_info *ex_inf) {
   return 0;
 };
 
+//This function receives a string in the form of "@pri" and changes the process own priority
+void chpri (const char * str){
+  if (str[0]!='@') return; //If called with the wrong argument, does nothing
+  int nicef = atoi(&str[1]);
+  nice(nicef);
+}
+
 int cmdfork (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   pid_t pidhijo;
   if ((pidhijo = fork())==-1){
@@ -150,16 +168,17 @@ int cmdfork (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 
 int cmdexec (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   if (trozos[1] == NULL) {
-    fprintf(stderr,"No program specified");
+    fprintf(stderr,"Error: No program specified\n");
     return -1;
   }
-  if (trozos[1][0] == '@') { //Cuidao
-    char pidt[10]; sprintf(pidt,"%i",getpid());
-    const char * trzs[] = {NULL,pidt,&trozos[1][1]};
-    priority(trzs,3,ex_inf);
+  if (trozos[1][0] == '@') { //this means that trozos[1] has @pri
+    chpri(trozos[1]); //changes priority
+    execvp(trozos[2],(char * const *) (&trozos[2]));//ojo al tipo del segundo arg
+    perror("Error: exec failed");
+    return -1;
   }
-  execvp(trozos[1],(char * const *)&trozos[2]);//ojo al tipo del segundo arg
-  perror("Error: exec failed");
+  execvp(trozos[1],(char * const *) (&trozos[1]));
+  perror("Error:exec failed");
   return -1;
 }
 
@@ -205,6 +224,7 @@ int listarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
+  //PENDIENTE DE REVISIÓN
   if (ntrozos < 2) {
     return listarprocs(NULL,0,NULL);
   }
@@ -217,6 +237,10 @@ int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
+  if (trozos[1]==NULL){
+    fprintf(stderr, "Error: No option specified (-term | -sig)\n");
+    return -1;
+  }
   if (!strcmp(trozos[1],"-term")){
     //mostrar procesos hijos que terminaron normalmente
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
@@ -237,4 +261,12 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     fprintf(stderr, "Error: invalid argument to borraprocs");
   }
   return 0;
+}
+
+int direct_cmd (const char ** trozos, int ntrozos, struct extra_info *ex_inf){
+  if (trozos[ntrozos-1][0] == '&'){
+    trozos[ntrozos-1] = NULL;
+    return splano(&trozos[-1], ntrozos-2, ex_inf);
+  }
+  return pplano(&trozos[-1], ntrozos-1, ex_inf);
 }
