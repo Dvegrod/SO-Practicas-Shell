@@ -4,7 +4,7 @@
 #include "p1commands.h"
 #include "p2commands.h"
 #include "p3commands.h"
-#define SHELL_EXIT_SIGNAL 0
+#define SHELL_EXIT_SIGNAL 2
 
 /*
   Sistemas Operativos

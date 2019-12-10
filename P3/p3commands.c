@@ -29,7 +29,7 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   char ** copytrozos = malloc(sizeof(char *) * n);
   for (int j = 0; j < n; j++) {
     copytrozos[j] = malloc(sizeof(char) * strlen(trozos[j]));
-    strncpy(copytrozos[j],trozos[j],MAXLEN);
+    strncpy(copytrozos[j],trozos[j],strlen(trozos[j]));
   }
   elem->nargs = n;
   elem->cmd = copytrozos;;
@@ -71,9 +71,14 @@ int showPElem(struct pelem * e) {
   //Status
   statusUpdate(e);
   //signal or value of return
-  char sigorval[20];
-  char * format = (e->status & PRUNNING) ? "\0" : (e->status & (PSTOPPED | PSIGN) ? "Signal: %i" : "Value: %i");
-  sprintf(sigorval,format,*e->sigorval);
+  char sigorval[30];
+  if (e->status & (PSIGN | PSTOPPED))
+    sprintf(sigorval,"Signal: %i",*e->sigorval);
+  else
+    if (e->status & PTERM)
+      sprintf(sigorval,"Value: %i",*e->sigorval);
+    else
+      sprintf(sigorval,"");
   //time
   char date[20];
   strftime(date,20,"%a %b %d %T %Y",e->time); //STATUS?
