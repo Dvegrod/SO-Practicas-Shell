@@ -57,7 +57,6 @@ int statusUpdate(struct pelem * e) {
                |(TRUE_TO_ONE(WIFEXITED(status))   << 1)
                |(TRUE_TO_ONE(WIFSTOPPED(status)));
     if (e->sigorval == NULL) e->sigorval = malloc(sizeof(int));
-
     switch (e->status) {
       case PTERM : {
         *e->sigorval = WEXITSTATUS(status);
@@ -175,11 +174,11 @@ int cmdexec (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     chpri(trozos[1]); //changes priority
     execvp(trozos[2],(char * const *) (&trozos[2]));//ojo al tipo del segundo arg
     perror("Error: exec failed");
-    return -1;
+    exit(EXIT_FAILURE);
   }
   execvp(trozos[1],(char * const *) (&trozos[1]));
   perror("Error:exec failed");
-  return -1;
+  exit(EXIT_FAILURE);
 }
 
 int pplano (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
@@ -189,6 +188,17 @@ int pplano (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   return cmdexec(trozos,ntrozos,NULL);
 }
 
+/*
+//Función que filtra el argumento @pri antes de llamar al código del comando pplano
+int pplano (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
+  if (trozos[1][0]=='@'){
+    chpri(trozos[1]);
+    for (int i = ntrozos-1; i > 0; i--) trozos[i] = trozos[i-1];
+    return cmd_pplano(trozos, ntrozos-1, ex_inf);
+  }
+  return cmd_pplano(trozos,ntrozos,ex_inf);
+}
+*/
 
 //AUXILIAR
 int spfork() {
@@ -217,6 +227,18 @@ int splano (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     }
   }
 }
+
+/*
+//Función que filtra el argumento @pri antes de llamar al código del comando splano
+int splano (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
+  if (trozos[1][0]=='@'){
+    chpri(trozos[1]);
+    for (int i = ntrozos-1; i > 0; i--) trozos[i] = trozos[i-1];
+    return cmd_splano(trozos, ntrozos-1, ex_inf);
+  }
+  return cmd_splano(trozos, ntrozos, ex_inf);
+}
+*/
 
 int listarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   for (iterator i = first(&ex_inf->procesos); !isLast(i); i = next(i)) showPElem(getElement(i));
@@ -275,7 +297,8 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 int direct_cmd (const char ** trozos, int ntrozos, struct extra_info *ex_inf){
   if (trozos[ntrozos-1][0] == '&'){
     for (int i = ntrozos-1; i > 0; i--) trozos[i] = trozos[i-1];
-    return splano(trozos, ntrozos, ex_inf);
+    return splano(trozos, ntrozos-1, ex_inf);
   }
-  return pplano(&trozos[-1], ntrozos-1, ex_inf);
+  for (int i = ntrozos; i > 0; i--) trozos[i] = trozos[i-1];
+  return pplano(trozos, ntrozos-1, ex_inf);
 }
