@@ -32,7 +32,7 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   elem->status = PRUNNING;
   //TIME
   time_t epch;
-  ctime(&epch);
+  time(&epch);
   elem->time = localtime(&epch); //Atentos al valgrind
   //CMD
   char ** copytrozos = malloc(sizeof(char *) * n);
@@ -224,16 +224,25 @@ int listarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
-  //PENDIENTE DE REVISIÓN
-  if (ntrozos < 2) {
-    return listarprocs(NULL,0,NULL);
-  }
-  else {
-    pid_t pid = atoi(trozos[1]);
-    struct pelem * elem;
-    searchPElem(&ex_inf->procesos,pid,&elem);
-    return showPElem(elem);
-  }
+  if (ntrozos < 3)
+    if (ntrozos < 2) {
+      return listarprocs(NULL,0,NULL);
+    }
+    else {
+      pid_t pid = atoi(trozos[1]);
+      struct pelem * elem;
+      searchPElem(&ex_inf->procesos,pid,&elem);
+      return showPElem(elem);
+    }
+  else
+    if (!strcmp(trozos[1],"-fg")) {
+      waitpid(atoi(trozos[2]),NULL,WAIT_ANY); //Nse
+      trozos[1] = trozos[2];
+      trozos[2] = NULL;
+      cmdproc(trozos,ntrozos-1,ex_inf);
+    }
+    else fprintf(stderr,"Not a valid set of arguments: proc [-fg] pid");
+  return 0;
 }
 
 int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
@@ -265,8 +274,8 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 
 int direct_cmd (const char ** trozos, int ntrozos, struct extra_info *ex_inf){
   if (trozos[ntrozos-1][0] == '&'){
-    trozos[ntrozos-1] = NULL;
-    return splano(&trozos[-1], ntrozos-2, ex_inf);
+    for (int i = ntrozos-1; i > 0; i--) trozos[i] = trozos[i-1];
+    return splano(trozos, ntrozos, ex_inf);
   }
   return pplano(&trozos[-1], ntrozos-1, ex_inf);
 }
