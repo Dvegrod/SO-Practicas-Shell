@@ -1,5 +1,6 @@
 #include "p3commands.h"
-#define TRUE_TO_ONE(x) (x) ? 1 : 0
+#define SUWAIT 1
+#define SUNOWAIT 0
 #define PRUNNING 0
 #define PSTOPPED 1
 #define PTERM    2
@@ -33,12 +34,12 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   //TIME
   time_t epch;
   time(&epch);
-  elem->time = localtime(&epch); //Atentos al valgrind
+  elem->time = localtime(&epch);
   //CMD
   char ** copytrozos = malloc(sizeof(char *) * n);
   for (int j = 0; j < n; j++) {
     copytrozos[j] = malloc(sizeof(char) * strlen(trozos[j]));
-    strncpy(copytrozos[j],trozos[j],strlen(trozos[j]));
+    strcpy(copytrozos[j],trozos[j]);
   }
   elem->nargs = n;
   elem->cmd = copytrozos;;
@@ -53,24 +54,12 @@ int statusUpdate(struct pelem * e, int flag) {
   int status;
   int wpid = waitpid(e->pid,&status,flag ? 0 : WNOHANG | WUNTRACED | WCONTINUED);
   if (wpid == e->pid) {
-    e->status = (TRUE_TO_ONE(WIFSIGNALED(status)) << 2)
-               |(TRUE_TO_ONE(WIFEXITED(status))   << 1)
-               |(TRUE_TO_ONE(WIFSTOPPED(status)));
     if (e->sigorval == NULL) e->sigorval = malloc(sizeof(int));
-    switch (e->status) {
-      case PTERM : {
-        *e->sigorval = WEXITSTATUS(status);
-        break;
-      }
-      case PSIGN : {
-        *e->sigorval = WTERMSIG(status);
-        break;
-      }
-      case PSTOPPED : {
-        *e->sigorval = WSTOPSIG(status);
-       break;
-      }
-    }
+
+    if (WIFEXITED(status))   {e->status = PTERM;    *e->sigorval = WEXITSTATUS(status);}
+    if (WIFSIGNALED(status)) {e->status = PSIGN;    *e->sigorval = WTERMSIG(status);}
+    if (WIFSTOPPED(status))  {e->status = PSTOPPED; *e->sigorval = WSTOPSIG(status);}
+    if (WIFCONTINUED(status)){e->status = PRUNNING; free(e->sigorval);}
   }
   status = e->status;
   return status;
@@ -269,7 +258,7 @@ int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
       pid_t pid = atoi(trozos[2]); //falta comprobación de si lo introducido es un número
       struct pelem * elem;
       searchPElem(&ex_inf->procesos, pid, &elem);
-      statusUpdate(elem,0x1);
+      statusUpdate(elem,SUNOWAIT);
       showPElem(elem);
       RemoveElement(&ex_inf->procesos,elem,freePElem);
       return 0;
@@ -293,7 +282,7 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     //mostrar procesos hijos que terminaron normalmente
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
       struct pelem * e = getElement(i);
-      statusUpdate(e,0);
+      statusUpdate(e,SUNOWAIT);
       if (e->status & PTERM) freePElem(e);
     }
   }
@@ -301,7 +290,7 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     //mostrar procesos hijos que terminaron por señal
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
       struct pelem * e = getElement(i);
-      statusUpdate(e,0);
+      statusUpdate(e,SUNOWAIT);
       if (e->status & PSIGN) freePElem(e);
     }
   }
