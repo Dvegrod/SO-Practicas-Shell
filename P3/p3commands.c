@@ -48,10 +48,10 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   return 0;
 };
 
-int statusUpdate(struct pelem * e) {
+int statusUpdate(struct pelem * e, int flag) {
   //PROBLEMA: El status siempre sale o running o stopped. Aunque el proceso haya acabado sigue saliendo STOPPED
   int status;
-  int wpid = waitpid(e->pid,&status,WNOHANG | WUNTRACED | WCONTINUED);
+  int wpid = waitpid(e->pid,&status,flag ? 0 : WNOHANG | WUNTRACED | WCONTINUED);
   if (wpid == e->pid) {
     e->status = (TRUE_TO_ONE(WIFSIGNALED(status)) << 2)
                |(TRUE_TO_ONE(WIFEXITED(status))   << 1)
@@ -79,7 +79,7 @@ int statusUpdate(struct pelem * e) {
 int showPElem(struct pelem * e) {
   //PROBLEMA: El started time siempre sale el 1 de enero de 1970 a medianoche (EPOCH 000000)...
   //Status
-  statusUpdate(e);
+  statusUpdate(e,0);
   //signal or value of return
   char sigorval[30];
   if (e->status & (PSIGN | PSTOPPED))
@@ -267,13 +267,11 @@ int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   case 3:{ //el comango fue "proc -fg pid"
     if(!strcmp(trozos[1],"-fg")){
       pid_t pid = atoi(trozos[2]); //falta comprobación de si lo introducido es un número
-      int status;
-      waitpid(pid,&status,0);
       struct pelem * elem;
       searchPElem(&ex_inf->procesos, pid, &elem);
-      statusUpdate(elem);
+      statusUpdate(elem,0x1);
       showPElem(elem);
-      freePElem(elem);
+      RemoveElement(&ex_inf->procesos,elem,freePElem);
       return 0;
     }
     fprintf(stderr, "Error: Invalid flag specified\n");
@@ -295,7 +293,7 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     //mostrar procesos hijos que terminaron normalmente
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
       struct pelem * e = getElement(i);
-      statusUpdate(e);
+      statusUpdate(e,0);
       if (e->status & PTERM) freePElem(e);
     }
   }
@@ -303,7 +301,7 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     //mostrar procesos hijos que terminaron por señal
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
       struct pelem * e = getElement(i);
-      statusUpdate(e);
+      statusUpdate(e,0);
       if (e->status & PSIGN) freePElem(e);
     }
   }
