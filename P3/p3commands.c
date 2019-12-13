@@ -258,7 +258,7 @@ int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
       pid_t pid = atoi(trozos[2]); //falta comprobación de si lo introducido es un número
       struct pelem * elem;
       searchPElem(&ex_inf->procesos, pid, &elem);
-      statusUpdate(elem,SUNOWAIT);
+      statusUpdate(elem,SUWAIT);
       showPElem(elem);
       RemoveElement(&ex_inf->procesos,elem,freePElem);
       return 0;
