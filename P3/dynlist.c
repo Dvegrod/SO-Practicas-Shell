@@ -69,7 +69,7 @@ int isEmptyList(lista l) {
   return (l == NULL);
 }
 
-iterator first(iterator it) {
+iterator first(lista * it) { //No hacer modificaciones concurrentes
   return it;
 }
 

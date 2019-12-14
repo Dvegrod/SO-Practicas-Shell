@@ -163,17 +163,14 @@ int cmdexec (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     fprintf(stderr,"Error: No program specified\n");
     return -1;
   }
-  const char * nt[ntrozos];
-  for (int i = 0; i < ntrozos; i++) {
-    nt[i] = trozos[i];
-  }
+  trozos[ntrozos] = NULL;
   if (trozos[1][0] == '@') { //this means that trozos[1] has @pri
     chpri(trozos[1]); //changes priority
-    execvp(trozos[2],(char * const *) (&nt[2]));//ojo al tipo del segundo arg
+    execvp(trozos[2],(char * const *) (&trozos[2]));//ojo al tipo del segundo arg
     perror("Error: exec failed");
     exit(EXIT_FAILURE);
   }
-  execvp(trozos[1],(char * const *) (&nt[1]));
+  execvp(trozos[1],(char * const *) (&trozos[1]));
   perror("Error:exec failed");
   exit(EXIT_FAILURE);
 }
@@ -293,7 +290,10 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
       struct pelem * e = getElement(i);
       statusUpdate(e,SUNOWAIT);
-      if (e->status & PTERM) RemoveElement(&ex_inf->procesos,e,freePElem);
+      if (e->status & PTERM) {
+        RemoveElement(&ex_inf->procesos,e,freePElem);
+        i = first(&ex_inf->procesos);
+      }
     }
   }
   else if(!strcmp(trozos[1],"-sig")){
@@ -301,7 +301,10 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
       struct pelem * e = getElement(i);
       statusUpdate(e,SUNOWAIT);
-      if (e->status & PSIGN) RemoveElement(&ex_inf->procesos,e,freePElem);
+      if (e->status & PSIGN) {
+        RemoveElement(&ex_inf->procesos,e,freePElem);
+        i = first(&ex_inf->procesos);
+      }
     }
   }
   else{
