@@ -38,8 +38,8 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   //CMD
   char ** copytrozos = malloc(sizeof(char *) * n);
   for (int j = 0; j < n; j++) {
-    copytrozos[j] = malloc(sizeof(char) * strlen(trozos[j]));
-    strcpy(copytrozos[j],trozos[j]);
+      copytrozos[j] = malloc(sizeof(char) * strlen(trozos[j]));
+      strcpy(copytrozos[j],trozos[j]);
   }
   elem->nargs = n;
   elem->cmd = copytrozos;;
@@ -66,7 +66,6 @@ int statusUpdate(struct pelem * e, int flag) {
 }
 
 int showPElem(struct pelem * e) {
-  //PROBLEMA: El started time siempre sale el 1 de enero de 1970 a medianoche (EPOCH 000000)...
   //Status
   statusUpdate(e,0);
   //signal or value of return
@@ -118,12 +117,17 @@ int priority (const char * trozos[], int ntrozos, struct extra_info *ex_inf) {
     fprintf(stderr,"Error: invalid arguments. priority pid [value]");
     return 0;
   }
-  int pid = atoi(trozos[1]);
-  if (trozos[2] == NULL)
-    if (getpriority(PRIO_PROCESS,pid) == -1 && errno != 0) {
+  pid_t pid = atoi(trozos[1]);
+
+  int priority;
+  if (trozos[2] == NULL) {
+    if ((priority = getpriority(PRIO_PROCESS,pid)) == -1 && errno != 0) {
       perror("Error getpriority en priority");
       return -1;
     }
+    printf("Nice value of process: %i is %i\n",pid,priority);
+    return 0;
+  }
   int niceoffset = atoi(trozos[2]);
   if (setpriority(PRIO_PROCESS,pid,niceoffset) == -1) {
     perror("Error setpriority en priority");
@@ -135,7 +139,7 @@ int priority (const char * trozos[], int ntrozos, struct extra_info *ex_inf) {
 //This function receives a string in the form of "@pri" and changes the process own priority
 void chpri (const char * str){
   if (str[0]!='@') return; //If called with the wrong argument, does nothing
-  int nicef = atoi(&str[1]);
+  int nicef = atoi(str);
   nice(nicef);
 }
 
@@ -155,17 +159,21 @@ int cmdfork (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int cmdexec (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
-  if (trozos[1] == NULL) {
+  if (ntrozos <= 1) {
     fprintf(stderr,"Error: No program specified\n");
     return -1;
   }
+  const char * nt[ntrozos];
+  for (int i = 0; i < ntrozos; i++) {
+    nt[i] = trozos[i];
+  }
   if (trozos[1][0] == '@') { //this means that trozos[1] has @pri
     chpri(trozos[1]); //changes priority
-    execvp(trozos[2],(char * const *) (&trozos[2]));//ojo al tipo del segundo arg
+    execvp(trozos[2],(char * const *) (&nt[2]));//ojo al tipo del segundo arg
     perror("Error: exec failed");
     exit(EXIT_FAILURE);
   }
-  execvp(trozos[1],(char * const *) (&trozos[1]));
+  execvp(trozos[1],(char * const *) (&nt[1]));
   perror("Error:exec failed");
   exit(EXIT_FAILURE);
 }
@@ -244,7 +252,8 @@ int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
       return -1;
     }
     else{ //el comando fue "proc pid"
-      pid_t pid = atoi(trozos[1]); //falta la comprobación de si lo que se introdujo es un número
+      pid_t pid = atoi(trozos[1]);
+
       if ((pid<0) || (pid == getpid())) return listarprocs(trozos,ntrozos,ex_inf);
       struct pelem * elem;
       if (searchPElem(&ex_inf->procesos, pid, &elem) == 1){
@@ -255,12 +264,13 @@ int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   }
   case 3:{ //el comango fue "proc -fg pid"
     if(!strcmp(trozos[1],"-fg")){
-      pid_t pid = atoi(trozos[2]); //falta comprobación de si lo introducido es un número
+      pid_t pid = atoi(trozos[2]);
+
       struct pelem * elem;
       searchPElem(&ex_inf->procesos, pid, &elem);
       statusUpdate(elem,SUWAIT);
-      showPElem(elem);
-      RemoveElement(&ex_inf->procesos,elem,freePElem);
+      /* showPElem(elem); */
+      /* RemoveElement(&ex_inf->procesos,elem,freePElem); */
       return 0;
     }
     fprintf(stderr, "Error: Invalid flag specified\n");
@@ -283,7 +293,7 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
       struct pelem * e = getElement(i);
       statusUpdate(e,SUNOWAIT);
-      if (e->status & PTERM) freePElem(e);
+      if (e->status & PTERM) RemoveElement(&ex_inf->procesos,e,freePElem);
     }
   }
   else if(!strcmp(trozos[1],"-sig")){
@@ -291,7 +301,7 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
       struct pelem * e = getElement(i);
       statusUpdate(e,SUNOWAIT);
-      if (e->status & PSIGN) freePElem(e);
+      if (e->status & PSIGN) RemoveElement(&ex_inf->procesos,e,freePElem);
     }
   }
   else{
@@ -301,12 +311,16 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 }
 
 int direct_cmd (const char ** trozos, int ntrozos, struct extra_info *ex_inf){
+  char *newtrozos[ntrozos+1];
+  newtrozos[0] = malloc(sizeof(char)*2);
+  newtrozos[0] = "\b";
+  newtrozos[ntrozos] = NULL;
   if (trozos[ntrozos-1][0] == ('&')){
-    for (int i = ntrozos-1; i > 0; i--)
-      trozos[i] = trozos[i-1];
-    return splano(trozos, ntrozos-1, ex_inf);
+    for (int i = 1; i < ntrozos; i++)
+      newtrozos[i] = (char *) trozos[i-1];
+    return splano((const char **)newtrozos, ntrozos, ex_inf);
   }
-  for (int i = ntrozos; i > 0; i--)
-    trozos[i] = trozos[i-1];
-  return pplano(trozos, ntrozos-1, ex_inf);
+  for (int i = 1; i <= ntrozos; i++)
+    newtrozos[i] = (char *) trozos[i-1];
+  return pplano((const char **)newtrozos, ntrozos+1, ex_inf);
 }
