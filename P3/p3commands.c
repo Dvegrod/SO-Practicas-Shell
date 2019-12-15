@@ -300,13 +300,17 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
       return -1;
     }
   struct pelem * e;
-  for(iterator i = first(&(ex_inf->procesos));!isEmptyList(ex_inf->procesos) && !isLast(i); i = next(i)){
+  lista l = ex_inf->procesos;
+  iterator i = first(&l);
+  while (!isEmptyList(l) && !isLast(i)) {
     e = getElement(i);
     statusUpdate(e,SUNOWAIT);
     if (e->status == option) {
       RemoveElement(&ex_inf->procesos,e,freePElem);
       i = first(&ex_inf->procesos);
     }
+    else
+      i = next(i);
   }
   return 0;
 }
