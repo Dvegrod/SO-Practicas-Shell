@@ -31,7 +31,7 @@ int RemoveElementAt(struct node **plist, iterator position, int (*freeE)(void *)
   if (*plist == NULL) return -1;
 
   struct node **pointertopointer = plist; //To aim to the pointer in the list that aims to the node to be removed
-  for (iterator i = first(pointertopointer);i != position; i++) {
+  for (iterator i = first(pointertopointer);i != position; i = next(i)) {
     if (*pointertopointer == NULL) return -1;  //Index out of bounds
     pointertopointer = &(*pointertopointer)->next;
   }

@@ -297,8 +297,9 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
       fprintf(stderr,"Invalid argument: borrarprocs (-term | -sig)");
       return -1;
     }
-  for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
-    struct pelem * e = getElement(i);
+  struct pelem * e;
+  for(iterator i = first(&(ex_inf->procesos));!isEmptyList(*i) && !isLast(i); i = next(i)){
+    e = getElement(i);
     statusUpdate(e,SUNOWAIT);
     if (e->status == option) {
       RemoveElement(&ex_inf->procesos,e,freePElem);
@@ -310,8 +311,8 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
 
 int direct_cmd (const char ** trozos, int ntrozos, struct extra_info *ex_inf){
   char *newtrozos[ntrozos+1];
-  newtrozos[0] = malloc(sizeof(char)*2);
-  newtrozos[0] = "\b";
+  char emptyfield[2] = "\b";
+  newtrozos[0] = emptyfield;
   newtrozos[ntrozos] = NULL;
   if (trozos[ntrozos-1][0] == ('&')){
     for (int i = 1; i < ntrozos; i++)
