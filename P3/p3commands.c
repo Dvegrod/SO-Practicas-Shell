@@ -25,7 +25,6 @@ char* strstatus(int status){
   }
 }
 
-//ESTO ES SUSCEPTIBLE A CAMBIOS
 
 int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   struct pelem * elem = malloc(sizeof(struct pelem));
@@ -38,8 +37,8 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   //CMD
   char ** copytrozos = malloc(sizeof(char *) * n);
   for (int j = 0; j < n; j++) {
-      copytrozos[j] = malloc(sizeof(char) * strlen(trozos[j]));
-      strcpy(copytrozos[j],trozos[j]);
+      copytrozos[j] = malloc(sizeof(char) * strlen(trozos[j])+1);
+      strncpy(copytrozos[j],trozos[j],strlen(trozos[j])+1);
   }
   elem->nargs = n;
   elem->cmd = copytrozos;;
@@ -76,12 +75,13 @@ int showPElem(struct pelem * e) {
     if (e->status & PTERM)
       sprintf(sigorval,"Value: %i",*e->sigorval);
     else
-      sprintf(sigorval," ");
+      sprintf(sigorval,"\b");
   //time
   char date[20];
   strftime(date,20,"%a %b %d %T %Y",e->time); //STATUS?
   printf(" Pid: %5i | Status: %s | Started: %s %s | Command: ",
          e->pid,strstatus(e->status),date,sigorval);
+  //command
   for (int j = 0; j < e->nargs; j++) printf("%s ",e->cmd[j]);
   printf("\n");
   return 0;
@@ -103,7 +103,8 @@ int freePElem(void * elem) {
   struct pelem * e = elem;
   for (int i = 0; i < e->nargs; i++) free(e->cmd[i]);
   free(e->cmd);
-  free(e->sigorval);
+  if (e->sigorval != NULL)
+    free(e->sigorval);
   free(elem);
   return 0;
 }
@@ -139,8 +140,10 @@ int priority (const char * trozos[], int ntrozos, struct extra_info *ex_inf) {
 //This function receives a string in the form of "@pri" and changes the process own priority
 void chpri (const char * str){
   if (str[0]!='@') return; //If called with the wrong argument, does nothing
-  int nicef = atoi(str);
-  nice(nicef);
+  int nicef = atoi(&str[1]);
+  if (setpriority(PRIO_PROCESS,getpid(),nicef) == -1) {
+    perror("Error setpriority en chpri");
+  }
 }
 
 int cmdfork (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
@@ -284,31 +287,22 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
   if (trozos[1]==NULL){
     fprintf(stderr, "Error: No option specified (-term | -sig)\n");
     return -1;
-  }
-  if (!strcmp(trozos[1],"-term")){
-    //mostrar procesos hijos que terminaron normalmente
-    for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
-      struct pelem * e = getElement(i);
-      statusUpdate(e,SUNOWAIT);
-      if (e->status & PTERM) {
-        RemoveElement(&ex_inf->procesos,e,freePElem);
-        i = first(&ex_inf->procesos);
-      }
+  }  //SIGSEGV por probable acceso concurrente
+  int option = PRUNNING;
+  if (!strcmp(trozos[1],"-term")) option = PTERM;
+  else
+    if (!strcmp(trozos[1],"-sig")) option = PSIGN;
+    else {
+      fprintf(stderr,"Invalid argument: borrarprocs (-term | -sig)");
+      return -1;
     }
-  }
-  else if(!strcmp(trozos[1],"-sig")){
-    //mostrar procesos hijos que terminaron por señal
-    for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
-      struct pelem * e = getElement(i);
-      statusUpdate(e,SUNOWAIT);
-      if (e->status & PSIGN) {
-        RemoveElement(&ex_inf->procesos,e,freePElem);
-        i = first(&ex_inf->procesos);
-      }
+  for(iterator i = first(&(ex_inf->procesos)); !isLast(i); i = next(i)){
+    struct pelem * e = getElement(i);
+    statusUpdate(e,SUNOWAIT);
+    if (e->status == option) {
+      RemoveElement(&ex_inf->procesos,e,freePElem);
+      i = first(&ex_inf->procesos);
     }
-  }
-  else{
-    fprintf(stderr, "Error: invalid argument to borraprocs");
   }
   return 0;
 }

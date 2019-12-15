@@ -112,6 +112,12 @@ int processInput(char comando[], struct extra_info *ex_inf){
     return return_value;
 }
 
+void onexit(struct extra_info * ex_inf) {
+  disposeAll(&ex_inf->historial,Free); //cleans up and exits
+  disposeMemory(ex_inf);
+  disposeAll(&ex_inf->procesos,freePElem);
+  free(ex_inf);
+};
 
 int main(int argc, const char *argv[]){
     char comando[MAXLEN];
@@ -130,9 +136,6 @@ int main(int argc, const char *argv[]){
     } while(processInput(comando, ex_inf) != SHELL_EXIT_SIGNAL);
 
 
-    disposeAll(&ex_inf->historial,Free); //cleans up and exits
-    disposeMemory(ex_inf);
-    disposeAll(&ex_inf->procesos,Free);
-    free(ex_inf);
+    onexit(ex_inf);
     return EXIT_SUCCESS;
 }
