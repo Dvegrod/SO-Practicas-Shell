@@ -73,8 +73,8 @@ iterator first(lista * it) { //No hacer modificaciones concurrentes
   return it;
 }
 
-iterator next(iterator it) {
-  return &(*it)->next;
+iterator next(iterator it) { //Devuelve NULL en caso de no haber siguiente
+  return *it == NULL ? NULL : &(*it)->next;
 }
 
 int isLast(iterator it) {

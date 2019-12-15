@@ -298,7 +298,7 @@ int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
       return -1;
     }
   struct pelem * e;
-  for(iterator i = first(&(ex_inf->procesos));!isEmptyList(*i) && !isLast(i); i = next(i)){
+  for(iterator i = first(&(ex_inf->procesos));(i != NULL) && !isLast(i); i = next(i)){
     e = getElement(i);
     statusUpdate(e,SUNOWAIT);
     if (e->status == option) {
