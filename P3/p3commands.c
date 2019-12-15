@@ -327,3 +327,174 @@ int direct_cmd (const char ** trozos, int ntrozos, struct extra_info *ex_inf){
     newtrozos[i] = (char *) trozos[i-1];
   return pplano((const char **)newtrozos, ntrozos+1, ex_inf);
 }
+
+///////////////////////////////////////////////////////////////////////////////
+//////////////////////////   FUNCIONES DEL PDF    /////////////////////////////
+
+// The following code creates a child process that executes funcion2 while the
+// parent executes funcion1. When the child has ended, the parent process
+// executes funcion3
+
+if ((pid=fork())==0) {
+  funcion2();
+  exit(0);
+}
+else {
+  funcion1();
+  waitpid(pid,NULL,0);
+  funcion3();
+}
+
+// As exit() ends a program, we could rewrite it like this (without the else)
+
+if ((pid=fork())==0) {
+  funcion2();
+  exit(0);
+}
+funcion1();
+waitpid(pid,NULL,0);
+funcion3();
+
+//In this code both the parent process and the child process execute funcion3()
+
+if ((pid=fork())==0)
+  funcion2();
+else
+  funcion1();
+funcion3();
+
+// For a process to execute a program WE MUST USE the execvp() system
+// call. execvp searches the executables in the directories specified in the PATH
+// environment variable. execvp() only returns a value in case of error, otherwise
+// it replaces the calling process’s code. Here you have an example using execl.
+
+execl("/bin/ls","ls","-l","/usr",NULL);
+funcion(); /*no se ejecuta a no ser que execl falle*/
+
+/*
+execvp operates the exactly the same but with two small differences
+
+• it searches for executables in the PATH so, instead of specifying "/bin/ls" it would suffice to pass just "ls"
+
+• we pass a NULL terminated array of pointers, instead of a variable number of pointers to the arguments
+
+To check a process state we can use waitpid() with the following flags:
+
+waitpid(pid, &estado, WNOHANG |WUNTRACED |WCONTINUED) will give us information about the state of process pid
+in the variable estado ONLY WHEN THE RETURNED VALUE IS pid.
+Such information can be evaluated with the macros descibed in man waitpid (WIFEXITED, WIFSIGNALED . . . )
+
+The following functions allow us to obtain the signal name from the signal
+number and viceversa. (in systems where we do not have sig2str or str2sig)
+
+*/
+
+#include <signal.h>
+/******************************SENALES ******************************************/
+struct SEN{
+  char *nombre;
+  int senal;
+};
+
+static struct SEN sigstrnum[]={
+    "HUP", SIGHUP,
+    "INT", SIGINT,
+    "QUIT", SIGQUIT,
+    "ILL", SIGILL,
+    "TRAP", SIGTRAP,
+    "ABRT", SIGABRT,
+    "IOT", SIGIOT,
+    "BUS", SIGBUS,
+    "FPE", SIGFPE,
+    "KILL", SIGKILL,
+    "USR1", SIGUSR1,
+    "SEGV", SIGSEGV,
+    "USR2", SIGUSR2,
+    "PIPE", SIGPIPE,
+    "ALRM", SIGALRM,
+    "TERM", SIGTERM,
+    "CHLD", SIGCHLD,
+    "CONT", SIGCONT,
+    "STOP", SIGSTOP,
+    "TSTP", SIGTSTP,
+    "TTIN", SIGTTIN,
+    "TTOU", SIGTTOU,
+    "URG", SIGURG,
+    "XCPU", SIGXCPU,
+    "XFSZ", SIGXFSZ,
+    "VTALRM", SIGVTALRM,
+    "PROF", SIGPROF,
+    "WINCH", SIGWINCH,
+    "IO", SIGIO,
+    "SYS", SIGSYS,
+
+/*senales que no hay en todas partes*/
+    #ifdef SIGPOLL
+      "POLL", SIGPOLL,
+    #endif
+
+    #ifdef SIGPWR
+      "PWR", SIGPWR,
+    #endif
+
+    #ifdef SIGEMT
+      "EMT", SIGEMT,
+    #endif
+
+    #ifdef SIGINFO
+      "INFO", SIGINFO,
+    #endif
+
+    #ifdef SIGSTKFLT
+      "STKFLT", SIGSTKFLT,
+    #endif
+
+    #ifdef SIGCLD
+      "CLD", SIGCLD,
+    #endif
+
+    #ifdef SIGLOST
+      "LOST", SIGLOST,
+    #endif
+
+    #ifdef SIGCANCEL
+      "CANCEL", SIGCANCEL,
+    #endif
+
+    #ifdef SIGTHAW
+      "THAW", SIGTHAW,
+    #endif
+
+    #ifdef SIGFREEZE
+      "FREEZE", SIGFREEZE,
+    #endif
+
+    #ifdef SIGLWP
+      "LWP", SIGLWP,
+    #endif
+
+    #ifdef SIGWAITING
+      "WAITING", SIGWAITING,
+    #endif
+
+      NULL,-1,
+    }; /*fin array sigstrnum */
+
+
+int Senal(char * sen) /*devuelve el numero de señal a partir del nombre*/
+{
+  int i;
+  for (i=0; sigstrnum[i].nombre!=NULL; i++)
+    if (!strcmp(sen, sigstrnum[i].nombre))
+      return sigstrnum[i].senal;
+  return -1;
+}
+
+char *NombreSenal(int sen) /*devuelve el nombre senal a partir de la senal*/
+{ /* para sitios donde no hay sig2str*/
+  int i;
+  for (i=0; sigstrnum[i].nombre!=NULL; i++)
+    if (sen==sigstrnum[i].senal)
+      return sigstrnum[i].nombre;
+return ("SIGUNKNOWN");
+}
