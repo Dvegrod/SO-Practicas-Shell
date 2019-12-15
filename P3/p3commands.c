@@ -26,6 +26,8 @@ char* strstatus(int status){
   }
 }
 
+char * sigtostr(int sen);
+int strtosig(char *sen);
 
 int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   struct pelem * elem = malloc(sizeof(struct pelem));
@@ -71,7 +73,7 @@ int showPElem(struct pelem * e) {
   //signal or value of return
   char sigorval[30];
   if (e->status & (PSIGN | PSTOPPED))
-    sprintf(sigorval,"Signal: %i",*e->sigorval);
+    sprintf(sigorval,"Signal: %s", sigtostr(*e->sigorval));
   else
     if (e->status & PTERM)
       sprintf(sigorval,"Value: %i",*e->sigorval);
@@ -80,7 +82,7 @@ int showPElem(struct pelem * e) {
   //time
   char date[20];
   strftime(date,20,"%a %b %d %T %Y",e->time); //STATUS?
-  printf(" Pid: %5i | Status: %s | Started: %s %s | Command: ",
+  printf(" Pid: %5i | Status: %s | Started: %s | %s | Command: ",
          e->pid,strstatus(e->status),date,sigorval);
   //command
   for (int j = 0; j < e->nargs; j++) printf("%s ",e->cmd[j]);
@@ -270,8 +272,8 @@ int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
       struct pelem * elem;
       searchPElem(&ex_inf->procesos, pid, &elem);
       statusUpdate(elem,SUWAIT);
-      /* showPElem(elem); */
-      /* RemoveElement(&ex_inf->procesos,elem,freePElem); */
+      showPElem(elem);
+      RemoveElement(&ex_inf->procesos,elem,freePElem);
       return 0;
     }
     fprintf(stderr, "Error: Invalid flag specified\n");
@@ -415,7 +417,7 @@ static struct SEN sigstrnum[] = {
     }; /*fin array sigstrnum */
 
 
-int Senal(char * sen){ /*devuelve el numero de señal a partir del nombre*/
+int strtosig(char * sen){ /*devuelve el numero de señal a partir del nombre*/
   int i;
   for (i=0; sigstrnum[i].nombre!=NULL; i++)
     if (!strcmp(sen, sigstrnum[i].nombre))
@@ -423,7 +425,7 @@ int Senal(char * sen){ /*devuelve el numero de señal a partir del nombre*/
   return -1;
 }
 
-char *NombreSenal(int sen){ /*devuelve el nombre senal a partir de la senal*/
+char * sigtostr(int sen){ /*devuelve el nombre senal a partir de la senal*/
   /* para sitios donde no hay sig2str*/
   int i;
   for (i=0; sigstrnum[i].nombre!=NULL; i++)
