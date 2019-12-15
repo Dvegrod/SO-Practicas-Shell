@@ -82,7 +82,7 @@ int showPElem(struct pelem * e) {
   //time
   char date[20];
   strftime(date,20,"%a %b %d %T %Y",&e->time); //STATUS?
-  printf(" Pid: %5i | Status: %s | Started: %s %s | Command: ",
+  printf(" Pid: %5i | Status: %s | Started: %s | %s | Command: ",
          e->pid,strstatus(e->status),date,sigorval);
   //command
   for (int j = 0; j < e->nargs; j++) printf("%s ",e->cmd[j]);
