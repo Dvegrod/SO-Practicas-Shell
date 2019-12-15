@@ -4,7 +4,6 @@
 #include "p1commands.h"
 #include "p2commands.h"
 #include "p3commands.h"
-#define SHELL_EXIT_SIGNAL 2
 
 /*
   Sistemas Operativos
@@ -25,7 +24,7 @@ void printPrompt(){
 int readInput(char comando[], struct extra_info * ex_inf){
     if (fgets(comando,MAXLEN,stdin)==NULL){
         printf("stdin could not be read\n");
-        return SHELL_EXIT_SIGNAL; //returns an exit signal that tells main() to clean up and exit
+        return SHELL_EXIT_FAILURE; //returns an exit signal that tells main() to clean up and exit
     }
     if (comando[0]!='\n'){
         char * com = malloc(256*sizeof(char));
@@ -45,7 +44,7 @@ int TrocearCadena(char * cadena, const char * trozos[]){
 }
 
 int salir(const char *trozos[], int ntrozos, struct extra_info *ex_inf){
-  return SHELL_EXIT_SIGNAL; //returns an exit signal that tells main() to clean up and exit
+  return SHELL_EXIT_SUCCESS; //returns an exit signal that tells main() to clean up and exit
 }
 
 //Función para decidir qué comando se va a ejecutar
@@ -121,6 +120,7 @@ void onexit(struct extra_info * ex_inf) {
 
 int main(int argc, const char *argv[]){
     char comando[MAXLEN];
+    int ret;
 
     struct extra_info * ex_inf;
     ex_inf = (struct extra_info *) malloc(sizeof(struct extra_info));
@@ -133,9 +133,13 @@ int main(int argc, const char *argv[]){
     do{
         printPrompt();
         readInput(comando, ex_inf);
-    } while(processInput(comando, ex_inf) != SHELL_EXIT_SIGNAL);
-
+        ret = processInput(comando, ex_inf);
+    } while((ret != SHELL_EXIT_SUCCESS) && (ret != SHELL_EXIT_FAILURE));
 
     onexit(ex_inf);
-    return EXIT_SUCCESS;
+
+    if (ret == SHELL_EXIT_SUCCESS) return EXIT_SUCCESS;
+    if (ret == SHELL_EXIT_FAILURE) return EXIT_FAILURE;
+
+    return 0;
 }

@@ -172,11 +172,11 @@ int cmdexec (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
     chpri(trozos[1]); //changes priority
     execvp(trozos[2],(char * const *) (&trozos[2]));//ojo al tipo del segundo arg
     perror("Error: exec failed");
-    exit(EXIT_FAILURE);
+    return SHELL_EXIT_FAILURE; //exits the shell
   }
   execvp(trozos[1],(char * const *) (&trozos[1]));
   perror("Error:exec failed");
-  exit(EXIT_FAILURE);
+  return SHELL_EXIT_FAILURE; //exits the shell
 }
 
 int pplano (const char * trozos[], int ntrozos, struct extra_info *ex_inf){
