@@ -10,7 +10,7 @@
 struct pelem {
   pid_t pid;
   int status;
-  struct tm * time;
+  struct tm time;
   char ** cmd;
   int nargs;
   int * sigorval;
@@ -34,7 +34,7 @@ int buildPElem(iterator list,pid_t pid,const char *trozos[],int n) {
   //TIME
   time_t epch;
   time(&epch);
-  elem->time = localtime(&epch);
+  localtime_r(&epch,&elem->time);
   //CMD
   char ** copytrozos = malloc(sizeof(char *) * n);
   for (int j = 0; j < n; j++) {
@@ -79,7 +79,7 @@ int showPElem(struct pelem * e) {
       sprintf(sigorval,"\b");
   //time
   char date[20];
-  strftime(date,20,"%a %b %d %T %Y",e->time); //STATUS?
+  strftime(date,20,"%a %b %d %T %Y",&e->time); //STATUS?
   printf(" Pid: %5i | Status: %s | Started: %s %s | Command: ",
          e->pid,strstatus(e->status),date,sigorval);
   //command
