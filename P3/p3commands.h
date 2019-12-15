@@ -21,4 +21,6 @@ int cmdproc (const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 int borrarprocs (const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 int direct_cmd (const char * trozos[], int ntrozos, struct extra_info *ex_inf);
 
+int freePElem(void * elem);
+
 #endif

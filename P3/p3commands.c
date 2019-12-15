@@ -365,7 +365,7 @@ funcion3();
 // it replaces the calling process’s code. Here you have an example using execl.
 
 execl("/bin/ls","ls","-l","/usr",NULL);
-funcion(); /*no se ejecuta a no ser que execl falle*/
+funcion(); no se ejecuta a no ser que execl falle*/
 
 /*
 execvp operates the exactly the same but with two small differences
