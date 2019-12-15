@@ -73,16 +73,16 @@ int showPElem(struct pelem * e) {
   //signal or value of return
   char sigorval[30];
   if (e->status & (PSIGN | PSTOPPED))
-    sprintf(sigorval,"Signal: %s", sigtostr(*e->sigorval));
+    sprintf(sigorval,"| Signal: %s", sigtostr(*e->sigorval));
   else
     if (e->status & PTERM)
-      sprintf(sigorval,"Value: %i",*e->sigorval);
+      sprintf(sigorval,"| Value: %i",*e->sigorval);
     else
       sprintf(sigorval,"\b");
   //time
   char date[20];
   strftime(date,20,"%a %b %d %T %Y",&e->time); //STATUS?
-  printf(" Pid: %5i | Status: %s | Started: %s | %s | Command: ",
+  printf(" Pid: %5i | Status: %s | Started: %s %s | Command: ",
          e->pid,strstatus(e->status),date,sigorval);
   //command
   for (int j = 0; j < e->nargs; j++) printf("%s ",e->cmd[j]);

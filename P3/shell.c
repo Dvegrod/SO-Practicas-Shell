@@ -105,7 +105,12 @@ int processInput(char comando[], struct extra_info *ex_inf){
     } //for
     if (cmds[i].cmd_name == NULL){ //cmd not found
       //if command name was not found, will try to run it as an executable
-      printf("%s is not a shell command. Running as binary executable...\n", trozos[0]);
+      if (trozos[0][0]=='@'){
+        printf("%s is not a shell command. Running as binary executable...\n", trozos[1]);
+      }
+      else{
+        printf("%s is not a shell command. Running as binary executable...\n", trozos[0]);
+      }
       return_value = direct_cmd(trozos, ntrozos, ex_inf);
     } //cmd not found
     return return_value;
