@@ -1,4 +1,5 @@
 #include "p3commands.h"
+#include <signal.h>
 #define SUWAIT 1
 #define SUNOWAIT 0
 #define PRUNNING 0
@@ -324,6 +325,7 @@ int direct_cmd (const char ** trozos, int ntrozos, struct extra_info *ex_inf){
 
 ///////////////////////////////////////////////////////////////////////////////
 //////////////////////////   FUNCIONES DEL PDF    /////////////////////////////
+/*
 
 // The following code creates a child process that executes funcion2 while the
 // parent executes funcion1. When the child has ended, the parent process
@@ -383,7 +385,6 @@ number and viceversa. (in systems where we do not have sig2str or str2sig)
 
 */
 
-#include <signal.h>
 /******************************SENALES ******************************************/
 struct SEN{
   char *nombre;
@@ -475,8 +476,7 @@ static struct SEN sigstrnum[]={
     }; /*fin array sigstrnum */
 
 
-int Senal(char * sen) /*devuelve el numero de señal a partir del nombre*/
-{
+int Senal(char * sen){ /*devuelve el numero de señal a partir del nombre*/
   int i;
   for (i=0; sigstrnum[i].nombre!=NULL; i++)
     if (!strcmp(sen, sigstrnum[i].nombre))
@@ -484,8 +484,8 @@ int Senal(char * sen) /*devuelve el numero de señal a partir del nombre*/
   return -1;
 }
 
-char *NombreSenal(int sen) /*devuelve el nombre senal a partir de la senal*/
-{ /* para sitios donde no hay sig2str*/
+char *NombreSenal(int sen){ /*devuelve el nombre senal a partir de la senal*/
+  /* para sitios donde no hay sig2str*/
   int i;
   for (i=0; sigstrnum[i].nombre!=NULL; i++)
     if (sen==sigstrnum[i].senal)
